@@ -1,4 +1,5 @@
 import os
+import json
 import pickledb
 from config import config
 
@@ -12,7 +13,7 @@ def exists(key):
 
 
 def get(key):
-  return database.get(str(key))
+  return json.loads(database.get(str(key)))
 
 
 def rem(key):

@@ -1,3 +1,4 @@
+---
 pickledb:
   base_dir: /tmp
   filename: results.db
@@ -9,12 +10,3 @@ accounts:
     regions:
       - ap-sounteast-2
       - us-east-1
-outputs:
-  compliant:
-    base_dir: /tmp
-    filename: aws-scan-compliant.log
-  non_compliant:
-    base_dir: /tmp
-    filename: aws-scan-non-compliant.log
-compliance:
-  "iam-key-max-age-days": 30

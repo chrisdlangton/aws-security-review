@@ -1,24 +1,22 @@
-import database as db
-from config import config
-from yaml import load, dump
-import scripts
+import helpers
 import boto3
 import pytz
+import importlib
+import database as db
 from datetime import datetime
+from config import config
+from compliance import rules
+from yaml import load, dump
 
-
-from pprint import pprint
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-print "Started at %s" % now
-# ok, nok = scripts.get_loggers()
 
 db.deldb()
 
 for account in config['accounts']:
+  print "Started at %s" % now
   id = account['id']
-  if not db.exists(id):
-    db.set(id, account['alias'])
+  print 'Scanning %d' % id
 
   role = None
   profile = None
@@ -26,19 +24,22 @@ for account in config['accounts']:
     role = account['assumeRole']
   if account['profile']:
     profile = account['profile']
-  scripts.configure_credentials(role, profile, id)
+  helpers.configure_credentials(role, profile, id)
 
-  iam = scripts.get_client('iam')
-  for user in iam.list_users().get('Users'):
-    for keyData in iam.list_access_keys(UserName=user['UserName']).get('AccessKeyMetadata'):
-      scripts.iam_key_max_age_days(account, keyData)
-  # s3 = get_client('s3')
-  # pprint(s3.list_buckets())
+  for rule in rules:
+    rule_name = "compliance.%s" % rule['name']
+    rule_obj = importlib.import_module(rule_name)
+    evaluate = getattr(rule_obj, 'evaluate')
+    results = evaluate(account, rule)
+    if results:
+      report = getattr(rule_obj, 'report')
+      for result in results:
+        record = db.get(result)
+        if record['last_result'] == 'NONCOMPLIANT':
+          report(record)
+          break
 
-  for region in account['regions']:
-    print "region: %s" % region
+  # for region in account['regions']:
+  #   print "region: %s" % region
 
-pprint(db.get('iam-key-max-age-days-AKIAI3XZ7DMWCB2XWA7A'))
 db.dump()
-# ok.close
-# nok.close
