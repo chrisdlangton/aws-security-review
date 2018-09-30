@@ -5,7 +5,7 @@ import importlib
 import database as db
 from datetime import datetime
 from config import config
-from compliance import rules
+from compliance import rules, evaluate
 from yaml import load, dump
 
 
@@ -29,8 +29,9 @@ for account in config['accounts']:
   for rule in rules:
     rule_name = "compliance.%s" % rule['name']
     rule_obj = importlib.import_module(rule_name)
-    evaluate = getattr(rule_obj, 'evaluate')
-    results = evaluate(account, rule)
+    rule_fn = getattr(rule_obj, rule['name'])
+    data, result = rule_fn(account, rule)
+    results = evaluate(data, result, account, rule)
     if results:
       report = getattr(rule_obj, 'report')
       for result in results:
