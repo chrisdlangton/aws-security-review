@@ -5,4 +5,5 @@ pickledb:
 accounts:
   - id: 112398043980
     alias: langton
+    profile: chris
     assumeRole: read-only
