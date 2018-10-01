@@ -3,8 +3,10 @@ import random
 import string
 import json
 import sys
+import pytz
 from os import path
 from config import config
+import database as db
 from datetime import datetime
 
 
@@ -24,6 +26,8 @@ def configure_credentials(RoleName, Profile=None, Account='*', Region=None, Role
       RoleSessionName=RoleSessionName
   )
   credentials = assumedRoleObject['Credentials']
+  if Region:
+    credentials['region'] = Region
 
   return credentials, sts_client
 
@@ -40,6 +44,8 @@ def get_client(Service, Region=None, Profile=None, RoleName=None):
   global credentials
   if not credentials:
     credentials = get_credentials(RoleName, Profile, Region)
+  elif not Region and credentials.get('region'):
+    Region = credentials.get('region')
 
   return boto3.client(
       Service,
@@ -55,5 +61,44 @@ def date_converter(o):
     return o.__str__()
 
 
-def result_object(*args, **kwargs):
-  return json.dumps(kwargs, default=date_converter)
+def is_json(myjson):
+  try:
+    json_object = json.loads(myjson)
+  except ValueError:
+    return False
+  except TypeError:
+    return False
+  del json_object
+  return True
+
+
+def evaluate_rule(data, result, account, rule_config, prefix=None):
+  results = []
+  now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+  record_key = "{prefix}{label}-{id}".format(
+      label=rule_config['name'], id=account['id'], prefix=prefix or '')
+  if rule_config.get('region'):
+    record_key += "-%s" % rule_config['region']
+  result_time = {
+      'time': now,
+      'compliance': result
+  }
+  result_obj = {
+      'key': record_key,
+      'alias': account['alias'],
+      'account': account['id'],
+      'rule': rule_config,
+      'data': data,
+      'last_result': 'COMPLIES' if result else 'NONCOMPLIANT',
+      'results':  [result_time]
+  }
+  if db.exists(record_key):
+    record = db.get(record_key)
+    db.rem(record_key)
+    record['last_result'] = result_obj['last_result']
+    record['results'].append(result_time)
+    db.set(record_key, record)
+  else:
+    db.set(record_key, result_obj)
+  results.append(record_key)
+  return results

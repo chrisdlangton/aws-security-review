@@ -2,6 +2,7 @@ import os
 import json
 import pickledb
 from config import config
+import helpers
 
 # https://patx.github.io/pickledb/commands.html
 database = pickledb.load(os.path.join(
@@ -13,7 +14,11 @@ def exists(key):
 
 
 def get(key):
-  return json.loads(database.get(str(key)))
+  record = database.get(str(key))
+  if helpers.is_json(record):
+    return json.loads(record)
+  else:
+    return record
 
 
 def rem(key):
@@ -29,7 +34,10 @@ def getall():
 
 
 def set(key, value):
-  return database.set(str(key), value)
+  if not isinstance(value, basestring):
+    return database.set(str(key), json.dumps(value, default=helpers.date_converter))
+  else:
+    return database.set(str(key), value)
 
 def append(key, more):
   return database.append(str(key), more)

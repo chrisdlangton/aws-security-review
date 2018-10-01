@@ -19,3 +19,6 @@
 - name: config_recording
   purpose: Determine whether there is at least one Config recorder recording
   control: tba
+  regions:
+    - ap-southeast-2
+    - us-east-1

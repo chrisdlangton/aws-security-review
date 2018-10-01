@@ -1,12 +1,9 @@
 ---
 pickledb:
-  base_dir: /tmp
+  base_dir: ./
   filename: results.db
 accounts:
   - id: 112398043980
     alias: langton
     profile: chris
     assumeRole: read-only
-    regions:
-      - ap-sounteast-2
-      - us-east-1
