@@ -38,9 +38,9 @@ for account in config['accounts']:
 
   role = None
   profile = None
-  if account['assumeRole']:
+  if account.get('assumeRole'):
     role = account['assumeRole']
-  if account['profile']:
+  if account.get('profile'):
     profile = account['profile']
 
   helpers.configure_credentials(role, profile, id)

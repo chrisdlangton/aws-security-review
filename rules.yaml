@@ -22,3 +22,19 @@
   regions:
     - ap-southeast-2
     - us-east-1
+- name: cloudtrail_log_delivery
+  purpose: Determine whether any of the trails are delivering logs to CloudWatch Logs
+  control: tba
+  regions:
+    - ap-southeast-2
+    - us-east-1
+# CIS 1.5 Ensure IAM password policy requires at least one uppercase letter
+# CIS 1.6 Ensure IAM password policy require at least one lowercase letter
+# CIS 1.7 Ensure IAM password policy require at least one symbol
+# CIS 1.8 Ensure IAM password policy require at least one number
+# CIS 1.9 Ensure IAM password policy requires minimum length of 14 or greater
+# CIS 1.10  Ensure IAM password policy prevents password reuse
+# CIS 1.11  Ensure IAM password policy expires passwords within 90 days or less
+# CIS 1.12	Ensure no root account access key exists
+# CIS 1.13	Ensure MFA is enabled for the "root" account
+# CIS 1.14	Ensure hardware MFA is enabled for the "root" account
