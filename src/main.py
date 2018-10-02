@@ -9,7 +9,7 @@ import importlib
 import database as db
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-# db.deldb()
+db.deldb()
 
 
 def check_rule(rule):
@@ -53,7 +53,6 @@ for account in config['accounts']:
     if rule.get('regions'):
       for region in rule.get('regions'):
         helpers.configure_credentials(role, profile, id, region)
-        print "region: %s" % region
         rule['region'] = region
         check_rule(rule)
 

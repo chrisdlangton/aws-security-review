@@ -6,3 +6,4 @@ share/
 **.pyc
 .vscode/
 **.db
+config.yaml

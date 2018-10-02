@@ -15,12 +15,12 @@ def config_recording(account, rule_config):
 def report(record):
   print """
 Rule                  {rule}
-Result                {result}
+Result                {result} in region {region}
 Description           {desc}
-Recommended Control   {control}
-""".format(
-  rule=record['rule']['name'],
-  result=record['last_result'],
-  desc=record['rule']['purpose'],
-  control=record['rule']['control']
-)
+Recommended Control   {control}""".format(
+      rule=record['rule']['name'],
+      result=record['last_result'],
+      desc=record['rule']['purpose'],
+      control=record['rule']['control'],
+      region=record['rule']['region']
+    )
