@@ -9,7 +9,7 @@ import importlib
 import database as db
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-db.deldb()
+# db.deldb()
 
 
 def check_rule(rule):
