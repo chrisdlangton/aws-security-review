@@ -9,7 +9,6 @@ import importlib
 import database as db
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-print "Started at %s" % now
 # db.deldb()
 
 
@@ -32,9 +31,12 @@ def check_rule(rule):
         report(record)
         break
 
+rules = [x for x in rules if x.get('level') == 1]
+
 for account in config['accounts']:
+  print "Started at %s" % now
   id = account['id']
-  print 'Scanning AWS Account: %d' % id
+  print 'Scanning %d' % id
 
   role = None
   profile = None

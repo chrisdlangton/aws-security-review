@@ -4,6 +4,7 @@ import string
 import json
 import sys
 import pytz
+import dateutil
 from os import path
 from config import config
 import database as db
@@ -102,3 +103,18 @@ def evaluate_rule(data, result, account, rule_config, prefix=None):
     db.set(record_key, result_obj)
   results.append(record_key)
   return results
+
+UTC = pytz.timezone('UTC')
+def to_iso8601(when=None, tz=UTC):
+  if not when:
+    when = datetime.now(tz)
+  if not when.tzinfo:
+    when = tz.localize(when)
+  _when = when.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+  return _when[:-8] + _when[-5:] # remove microseconds
+
+def from_iso8601(when=None, tz=UTC):
+  _when = dateutil.parser.parse(when)
+  if not _when.tzinfo:
+    _when = tz.localize(_when)
+  return _when

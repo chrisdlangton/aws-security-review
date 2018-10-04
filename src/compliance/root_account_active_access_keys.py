@@ -8,7 +8,6 @@ def root_account_active_access_keys(account, rule_config):
   result = False
 
   iam = helpers.get_client('iam')
-  response = iam.generate_credential_report()
   content = iam.get_credential_report()['Content']
   users = content.splitlines()
   # Look for the '<root_account>' user value and determine whether access keys are active.
