@@ -4,7 +4,7 @@ import helpers
 FIELD_ACCESS_KEY_1_ACTIVE = 8
 FIELD_ACCESS_KEY_2_ACTIVE = 13
 
-def root_account_active_access_keys(account, rule_config):
+def ensure_no_root_account_access_key_exists(account, rule_config):
   result = False
 
   iam = helpers.get_client('iam')
@@ -22,13 +22,19 @@ def root_account_active_access_keys(account, rule_config):
 
 def report(record):
   print """
+CIS version {version} Level {level} Recommendation {recommendation} ({scored})
 Rule                  {rule}
 Result                {result}
-Description           {desc}
+Rationale             {desc}
 Recommended Control   {control}
 """.format(
   rule=record['rule']['name'],
   result=record['last_result'],
   desc=record['rule']['purpose'],
-  control=record['rule']['control']
+  control=record['rule']['control'],
+  version=record['rule']['version'],
+  level=record['rule']['level'],
+  recommendation=record['rule']['recommendation'],
+  scored='Scored' if record['rule']['scored'] else 'Not Scored'
 )
+

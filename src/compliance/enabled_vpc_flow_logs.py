@@ -17,7 +17,7 @@ def report(record):
   print """
 Rule                  {rule}
 Result                {result} in region {region}
-Description           {desc}
+Rationale             {desc}
 Recommended Control   {control}""".format(
       rule=record['rule']['name'],
       result=record['last_result'],

@@ -36,7 +36,7 @@ def report(record):
 CIS version {version} Level {level} Recommendation {recommendation} ({scored})
 Rule                  {rule}
 Result                {result}
-Description           {desc}
+Rationale             {desc}
 Recommended Control   {control}
 """.format(
   rule=record['rule']['name'],

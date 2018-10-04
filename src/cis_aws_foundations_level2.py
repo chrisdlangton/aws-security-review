@@ -31,7 +31,7 @@ def check_rule(rule):
         report(record)
         break
 
-rules = [x for x in rules if x.get('level') == 2]
+rules = [x for x in rules if x.get('level') == 1 or x.get('level') == 2]
 
 for account in config['accounts']:
   print "Started at %s" % now

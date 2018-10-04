@@ -4,7 +4,7 @@ import pytz
 from datetime import datetime
 
 
-def cis_avoid_the_use_of_the_root_account(account, rule_config):
+def avoid_the_use_of_the_root_account(account, rule_config):
   result = False
 
   now = datetime.utcnow().replace(tzinfo=pytz.UTC)
@@ -54,8 +54,7 @@ def cis_avoid_the_use_of_the_root_account(account, rule_config):
     return content, result
   else:
     time.sleep(3)
-    return cis_avoid_the_use_of_the_root_account(account, rule_config)
-
+    return avoid_the_use_of_the_root_account(account, rule_config)
 
 
 def report(record):
@@ -63,7 +62,7 @@ def report(record):
 CIS version {version} Level {level} Recommendation {recommendation} ({scored})
 Rule                  {rule}
 Result                {result}
-Description           {desc}
+Rationale             {desc}
 Recommended Control   {control}
 """.format(
   rule=record['rule']['name'],
@@ -75,4 +74,3 @@ Recommended Control   {control}
   recommendation=record['rule']['recommendation'],
   scored='Scored' if record['rule']['scored'] else 'Not Scored'
 )
-

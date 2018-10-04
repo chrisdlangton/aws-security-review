@@ -25,7 +25,7 @@ def report(record):
   print """
 Rule                  {rule}
 Result                {result}
-Description           {desc}
+Rationale             {desc}
 Recommended Control   {control}
 """.format(
   rule=record['rule']['name'],

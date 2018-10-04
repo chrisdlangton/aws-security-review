@@ -6,23 +6,6 @@
 - name: password_policy_on
   purpose: Configure a Strong Password Policy for Your Users. If you allow users to change their own passwords, require that they create strong passwords and that they rotate their passwords periodically
   control: Apply the Password Policy for your IAM Users and allow users to change their own password
-  settings:
-    AllowUsersToChangePassword: true
-    ExpirePasswords: true
-# CIS 1.11  Ensure IAM password policy expires passwords within 90 days or less
-    MaxPasswordAge: 90
-# CIS 1.9 Ensure IAM password policy requires minimum length of 14 or greater
-    MinimumPasswordLength: 14
-# CIS 1.10  Ensure IAM password policy prevents password reuse
-    PasswordReusePrevention: 10
-# CIS 1.6 Ensure IAM password policy require at least one lowercase letter
-    RequireLowercaseCharacters: true
-# CIS 1.8 Ensure IAM password policy require at least one number
-    RequireNumbers: true
-# CIS 1.7 Ensure IAM password policy require at least one symbol
-    RequireSymbols: true
-# CIS 1.5 Ensure IAM password policy requires at least one uppercase letter
-    RequireUppercaseCharacters: true
 - name: config_recording
   purpose: Determine whether there is at least one Config recorder recording
   control: tba
@@ -33,16 +16,6 @@
   control: tba
   regions:
     - ap-southeast-2
-# CIS 1.13	Ensure MFA is enabled for the "root" account
-- name: root_account_mfa_enabled
-  purpose: Determine whether the root account has MFA enabled
-# CIS 1.14	Ensure hardware MFA is enabled for the "root" account
-  hardwareMFA: true
-  control: tba
-# CIS 1.12	Ensure no root account access key exists
-- name: root_account_active_access_keys
-  purpose: Determine whether the root account has active access keys
-  control: tba
 # CIS 4.3	Ensure VPC flow logging is enabled in all VPCs
 - name: enabled_vpc_flow_logs
   purpose: Determine whether the root account has active access keys
@@ -53,7 +26,7 @@
 
 
 
-- name: cis_avoid_the_use_of_the_root_account
+- name: avoid_the_use_of_the_root_account
   version: 1.2.0
   recommendation: 1.1
   level: 1
@@ -80,3 +53,99 @@
   scored: True
   purpose: Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used
   control: Automatically disable dormant accounts after a 90 day period of inactivity
+
+- name: ensure_access_keys_are_rotated_every_90_days_or_less
+  version: 1.2.0
+  recommendation: 1.4
+  level: 1
+  scored: True
+  purpose: Rotating access keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used. Access keys should be rotated to ensure that data cannot be accessed with an old key which might have been lost, cracked, or stolen
+  control: Ensure all active keys have been rotated within 90 days. Apply a proceedure (manual or scripted) to generate new replacement access keys and make inactive all keys that have not been rotated in 90 Days
+
+- name: ensure_iam_password_policy_requires_at_least_one_uppercase_letter
+  version: 1.2.0
+  recommendation: 1.5
+  level: 1
+  scored: True
+  purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
+  control: Set the password policy as prescribed (at least one uppercase letter)
+
+- name: ensure_iam_password_policy_require_at_least_one_lowercase_letter
+  version: 1.2.0
+  recommendation: 1.6
+  level: 1
+  scored: True
+  purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
+  control: Set the password policy as prescribed (at least one lowercase letter)
+
+- name: ensure_iam_password_policy_require_at_least_one_symbol
+  version: 1.2.0
+  recommendation: 1.7
+  level: 1
+  scored: True
+  purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
+  control: Perform the following to set the password policy as prescribed (at least one symbol)
+
+- name: ensure_iam_password_policy_require_at_least_one_number
+  version: 1.2.0
+  recommendation: 1.8
+  level: 1
+  scored: True
+  purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
+  control: Perform the following to set the password policy as prescribed (at least one number)
+
+- name: ensure_iam_password_policy_requires_minimum_length_of_14_or_greater
+  version: 1.2.0
+  recommendation: 1.9
+  level: 1
+  scored: True
+  purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
+  control: Perform the following to set the password policy as prescribed ( minimum length of 14 or more)
+
+- name: ensure_iam_password_policy_prevents_password_reuse
+  version: 1.2.0
+  recommendation: 1.10
+  level: 1
+  scored: True
+  purpose: Preventing password reuse increases account resiliency against brute force login attempts
+  control: Perform the following to set the password policy as prescribed (prevent password reuse)
+
+- name: ensure_iam_password_policy_expires_passwords_within_90_days_or_less
+  version: 1.2.0
+  recommendation: 1.11
+  level: 1
+  scored: True
+  purpose: Reducing the password lifetime increases account resiliency against brute force login attempts
+  control: Perform the following to set the password policy as prescribed (expire passwords within 90 days or less)
+
+- name: ensure_no_root_account_access_key_exists
+  version: 1.2.0
+  recommendation: 1.12
+  level: 1
+  scored: True
+  purpose: Removing access keys associated with the root account limits vectors by which the account can be compromised. Additionally, removing the root access keys encourages the creation and use of role based accounts that are least privileged
+  control: Delete or disable active root access keys. Ensure that all users with administrative account access use a dedicated or secondary account for elevated activities
+
+- name: ensure_mfa_is_enabled_for_the_root_account
+  version: 1.2.0
+  recommendation: 1.13
+  level: 1
+  scored: True
+  purpose: Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that emits a time-sensitive key and have knowledge of a credential
+  control: Use multi-factor authentication (MFA) for all administrative "root" account access.
+
+- name: ensure_hardware_mfa_is_enabled_for_the_root_account
+  version: 1.2.0
+  recommendation: 1.14
+  level: 2
+  scored: True
+  purpose: A hardware MFA has a smaller attack surface than a virtual MFA. For example, a hardware MFA does not suffer the attack surface introduced by the mobile smartphone on which a virtual MFA resides
+  control: Establish a hardware MFA for the root account. Remediation should be only through the AWS Console , you must use your root account devices for the root account using credentials to sign in to AWS. You cannot manage MFA devices for the root account using other credentials
+
+- name: ensure_security_questions_are_registered_in_the_aws_account
+  version: 1.2.0
+  recommendation: 1.15
+  level: 1
+  scored: False
+  purpose: During events in which the Root password is no longer accessible or the MFA token associated with root is lost/destroyed it is possible, through authentication using secret questions and associated answers, to recover root login access
+  control: Login to the AWS Account as root, in the "Configure Security Questions" section select an appropriate question and enter an appropriate answer for 3 questions. Record Questions and Answers and place in a secure physical location
