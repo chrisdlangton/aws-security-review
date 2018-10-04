@@ -60,6 +60,10 @@
   scored: True
   purpose: The "root" account is the most privileged AWS account. Minimizing the use of this account and adopting the principle of least privilege for access management will reduce the risk of accidental changes and unintended disclosure of highly privileged credentials
   control: Ensure that all users with administrative account access use a dedicated or secondary account for elevated activities. This account should only be used for administrative activities and not internet browsing, email, or similar activities
+  settings:
+    password_used: 90
+    access_key_used: 0
+    certificate_rotated: 30
 
 - name: ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password
   version: 1.2.0
@@ -69,3 +73,10 @@
   purpose: Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that emits a time-sensitive key and have knowledge of a credential
   control: Use multi-factor authentication and encrypted channels for all administrative account access
 
+- name: ensure_credentials_unused_for_90_days_or_greater_are_disabled
+  version: 1.2.0
+  recommendation: 1.3
+  level: 1
+  scored: True
+  purpose: Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used
+  control: Automatically disable dormant accounts after a 90 day period of inactivity
