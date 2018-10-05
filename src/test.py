@@ -9,9 +9,8 @@ import importlib
 import database as db
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-print "Started at %s" % now
 db.deldb()
-
+TEST_RULE_NAME = 'ensure_iam_policies_are_attached_only_to_groups_or_roles'
 
 def check_rule(rule):
   rule_name = "compliance.%s" % rule['name']
@@ -32,9 +31,12 @@ def check_rule(rule):
         report(record)
         break
 
+rules = [x for x in rules if x.get('name') == TEST_RULE_NAME]
+
 for account in config['accounts']:
+  print "Started at %s" % now
   id = account['id']
-  print 'Scanning AWS Account: %d' % id
+  print 'Scanning %d' % id
 
   role = None
   profile = None

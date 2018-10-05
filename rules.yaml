@@ -149,3 +149,11 @@
   scored: False
   purpose: During events in which the Root password is no longer accessible or the MFA token associated with root is lost/destroyed it is possible, through authentication using secret questions and associated answers, to recover root login access
   control: Login to the AWS Account as root, in the "Configure Security Questions" section select an appropriate question and enter an appropriate answer for 3 questions. Record Questions and Answers and place in a secure physical location
+
+- name: ensure_iam_policies_are_attached_only_to_groups_or_roles
+  version: 1.2.0
+  recommendation: 1.16
+  level: 1
+  scored: True
+  purpose: Assigning privileges at the group or role level reduces the complexity of access management as the number of users grow. Reducing access management complexity may in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges
+  control: Create an IAM group and assign a policy to it, add a user to a given group, and remove a direct association between a user and any inline policies
