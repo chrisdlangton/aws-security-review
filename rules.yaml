@@ -157,3 +157,29 @@
   scored: True
   purpose: Assigning privileges at the group or role level reduces the complexity of access management as the number of users grow. Reducing access management complexity may in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges
   control: Create an IAM group and assign a policy to it, add a user to a given group, and remove a direct association between a user and any inline policies
+
+- name: maintain_current_contact_details
+  version: 1.2.0
+  recommendation: 1.17
+  level: 1
+  scored: False
+  purpose: If an AWS account is observed to be behaving in a prohibited or suspicious manner, AWS will attempt to contact the account owner by email and phone using the contact details listed. If this is unsuccessful and the account behavior needs urgent mitigation, proactive measures may be taken, including throttling of traffic between the account exhibiting suspicious behavior and the AWS API endpoints and the Internet. This will result in impaired service to and from the account in question, so it is in both the customers and AWS best interests that prompt contact can be established. This is best achieved by setting AWS account contact details to point to resources which have multiple individuals as recipients, such as email aliases and PABX hunt groups
+  control: Login to the AWS Account  with a user who has permission to read and write Billing information. Edit your contact information in the Account Settings
+
+- name: ensure_security_contact_information_is_registered
+  version: 1.2.0
+  recommendation: 1.18
+  level: 1
+  scored: False
+  purpose: Specifying security-specific contact information will help ensure that security advisories sent by AWS reach the team in your organization that is best equipped to respond to them
+  control: Establish security contact in the Alternate Contacts section of My Account. Consider specifying an internal email distribution list to ensure emails are regularly monitored by more than one individual
+
+- name: ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances
+  version: 1.2.0
+  recommendation: 1.19
+  level: 2
+  scored: False
+  purpose: AWS IAM roles reduce the risks associated with sharing and rotating credentials that can be used outside of AWS itself. If credentials are compromised, they can be used from outside of the AWS account they give access to. In contrast, in order to leverage role permissions an attacker would need to gain and maintain access to a specific instance to use the privileges associated with it. As time goes on, credentials that cannot be rotated are more likely to be known by an increasing number of individuals who no longer work for the organization owning the credentials
+  control: For any EC2 instance without a role associated it is now possible to associate roles while the instance state is of either 'running' or 'stopped' state, you do not need to stop or launch a new instance to assign a role.
+  regions:
+    - ap-southeast-2

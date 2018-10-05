@@ -10,7 +10,9 @@ import database as db
 
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
 db.deldb()
-TEST_RULE_NAME = 'ensure_iam_policies_are_attached_only_to_groups_or_roles'
+TEST_RULE_NAME = [
+  'ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances'
+]
 
 def check_rule(rule):
   rule_name = "compliance.%s" % rule['name']
@@ -31,7 +33,9 @@ def check_rule(rule):
         report(record)
         break
 
-rules = [x for x in rules if x.get('name') == TEST_RULE_NAME]
+  return result
+
+rules = [x for x in rules if x.get('name') in TEST_RULE_NAME]
 
 for account in config['accounts']:
   print "Started at %s" % now
