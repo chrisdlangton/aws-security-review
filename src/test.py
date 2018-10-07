@@ -11,7 +11,7 @@ import database as db
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
 db.deldb()
 TEST_RULE_NAME = [
-  'ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances'
+  'do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password'
 ]
 
 def check_rule(rule):

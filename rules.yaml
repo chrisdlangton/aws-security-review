@@ -183,3 +183,19 @@
   control: For any EC2 instance without a role associated it is now possible to associate roles while the instance state is of either 'running' or 'stopped' state, you do not need to stop or launch a new instance to assign a role.
   regions:
     - ap-southeast-2
+
+- name: ensure_a_support_role_has_been_created_to_manage_incidents_with_aws_support
+  version: 1.2.0
+  recommendation: 1.20
+  level: 1
+  scored: True
+  purpose: By implementing least privilege for access control, an IAM Role will require an appropriate IAM Policy to allow Support Center Access in order to manage Incidents with AWS Support
+  control: Create an IAM role for managing incidents with AWS, and configure it to allow only authorized users to manage incidents with AWS Support
+
+- name: do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password
+  version: 1.2.0
+  recommendation: 1.21
+  level: 1
+  scored: False
+  purpose: Requiring that additional steps be taken by the user after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization
+  control: 
