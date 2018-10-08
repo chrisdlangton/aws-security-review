@@ -198,4 +198,12 @@
   level: 1
   scored: False
   purpose: Requiring that additional steps be taken by the user after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization
-  control: 
+  control: Delete access keys that that were created at the same time as the user profile and do not have a last used date
+
+- name: ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created
+  version: 1.2.0
+  recommendation: 1.22
+  level: 1
+  scored: True
+  purpose: It's more secure to start with a minimum set of permissions and grant additional permissions as necessary, rather than starting with permissions that are too lenient and then trying to tighten them later. Providing full administrative privileges instead of restricting to the minimum set of permissions that the user is required to do exposes the resources to potentially unwanted actions
+  control: Detach the policy that has full administrative privileges, grant least privilege in its place, granting only the permissions required to perform a task

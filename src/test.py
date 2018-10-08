@@ -11,7 +11,7 @@ import database as db
 now = datetime.utcnow().replace(tzinfo=pytz.UTC)
 db.deldb()
 TEST_RULE_NAME = [
-  'do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password'
+  'ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created'
 ]
 
 def check_rule(rule):
