@@ -1,4 +1,4 @@
-FROM python:2.7-alpine
+FROM python:3.7-alpine
 
 VOLUME [ "/app" ]
 WORKDIR /app
@@ -9,5 +9,6 @@ RUN pip install -r requirements.txt
 COPY config.yaml /app/config.yaml
 COPY rules.yaml /app/rules.yaml
 
+RUN adduser -D -g '' -h '/app' aws-user
+USER aws-user
 ENTRYPOINT [ "python" ]
-CMD [ "src/main.py" ]

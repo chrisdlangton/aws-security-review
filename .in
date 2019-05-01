@@ -1,0 +1,29 @@
+cat <<EOF
+┌─┐┬ ┬┌─┐             
+├─┤│││└─┐             
+┴ ┴└┴┘└─┘             
+┌─┐┌─┐┌─┐┬ ┬┬─┐┬┌┬┐┬ ┬
+└─┐├┤ │  │ │├┬┘│ │ └┬┘
+└─┘└─┘└─┘└─┘┴└─┴ ┴  ┴ 
+┌─┐┌─┐┌─┐┌┐┌          
+└─┐│  ├─┤│││          
+└─┘└─┘┴ ┴┘└┘
+EOF
+
+if [[ ! -z "$(pwd)/bin" ]] && [[ $PATH != *"$(pwd)/bin"* ]]; then
+  export PATH="$PATH:$(pwd)/bin"
+fi
+
+if [[ $PATH != *$(npm bin)* ]]; then
+  export PATH="$PATH:$(npm bin)"
+fi
+
+if [[ ! -z $(ls venv/bin/activate 2>/dev/null) ]]; then
+  source venv/bin/activate
+fi
+
+git status
+
+if [[ ! -z $(which pylint) ]]; then
+  pylint -E --ignore=venv src/**/*.py src/*.py 
+fi

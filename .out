@@ -1,0 +1,3 @@
+if [[ ! -z "$(which deactivate)" ]]; then
+  deactivate
+fi
