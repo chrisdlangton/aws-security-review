@@ -7,3 +7,6 @@ accounts:
     alias: langton
     profile: chris
     assumeRole: read-only
+compliance:
+  cis_level: 2
+  custom_rules: True
