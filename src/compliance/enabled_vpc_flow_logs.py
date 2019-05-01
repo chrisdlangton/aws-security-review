@@ -1,9 +1,10 @@
-import helpers
+import libs, logging
 
 
+report = libs.report_custom
 def enabled_vpc_flow_logs(account, rule_config):
     result = False
-    ec2 = helpers.get_client('ec2')
+    ec2 = libs.get_client('ec2')
     vpcs = ec2.describe_vpcs()['Vpcs']
     for vpc in vpcs:
         data = ec2.describe_flow_logs(
@@ -12,17 +13,3 @@ def enabled_vpc_flow_logs(account, rule_config):
             result = result or flow['FlowLogStatus'].lower() == 'active'
 
     return data, result
-
-
-def report(record):
-    print """
-Rule                  {rule}
-Result                {result} in region {region}
-Rationale             {desc}
-Recommended Control   {control}""".format(
-        rule=record['rule']['name'],
-        result=record['last_result'],
-        desc=record['rule']['purpose'],
-        control=record['rule']['control'],
-        region=record['rule']['region']
-    )

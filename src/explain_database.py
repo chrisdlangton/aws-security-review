@@ -1,6 +1,7 @@
-import database as db
+from libs import Database
 from json import dumps
 
+db = Database()
 for key in db.getall():
     print("""
 ### {key}

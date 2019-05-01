@@ -1,10 +1,12 @@
-import helpers
+import libs
+import logging
 
 
+report = libs.report_cis
 def ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created(account, rule_config):
     result = False
     data = list()
-    iam = helpers.get_client('iam')
+    iam = libs.get_client('iam')
     policies = iam.list_policies(Scope='Local')['Policies']
     for p in policies:
         policy = iam.get_policy(PolicyArn=p['Arn'])['Policy']
@@ -41,16 +43,3 @@ def ensure_iam_policies_that_allow_full_administrative_privileges_are_not_create
         result = True
 
     return data, result
-
-
-def report(record):
-    print """
-Rule                  {rule}
-Result                {result}
-Rationale             {desc}
-Recommended Control   {control}""".format(
-        rule=record['rule']['name'],
-        result=record['last_result'],
-        desc=record['rule']['purpose'],
-        control=record['rule']['control']
-    )

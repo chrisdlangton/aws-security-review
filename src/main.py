@@ -12,31 +12,52 @@ proceedures
 Example:
     $ ./src/main.py -vvvv
 
-
 Attributes:
-    --config-file (string): defaults to config.yaml
-    --log-file (string): defaults to stdout
+  -h --help             show this help message and exit
+  -c --config-file CONFIG_FILE
+                        absolute path to config file
+  -r --rules-file RULES_FILE
+                        absolute path to rules config file
+  -l --log-file LOG_FILE
+                        absolute path to log file
+  -t --test TEST
+                        Comma seperated Rule name to test
+  -o --output OUTPUT
+                        output options: text | json
+  --verbose -v
+                        use -vvvvv for debug output, remove a "v" for quieter outputs
+  --debug
+                        avoids multiprocessing for cleaner stack traces but may be slower
 
 Todo:
     * Finish CIS test proceedures
-    * refactor to provide better layout of complience directory
+    * ignore list on rule name
+    * ignore list on report id
 """
-import boto3, pytz, importlib, logging, argparse
+import boto3
+import pytz
+import logging
+import argparse
+import multiprocessing
+import gc
+import libs
 from datetime import datetime
 from yaml import load, dump
-
-import database as db
-import helpers
-from compliance import rules
+from json import dumps
+from libs import Database
 
 
-def main():
+def main(debug, test, output):
     log = logging.getLogger()
-    c = helpers.get_config()
+    db = Database()
+    c = libs.get_config('config')
+    r = libs.get_config('rules')
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
     log.info(f"Started at {now}")
-    db.deldb()
-
+    if debug:
+        db.deldb()
+    queue = []
+    rules = []
     for account in c['accounts']:
         id = account['id']
         log.info(f'Scanning AWS Account: {id}')
@@ -47,52 +68,59 @@ def main():
             role = account['assumeRole']
         if account.get('profile'):
             profile = account['profile']
-
-        helpers.configure_credentials(role, profile, id)
-
+        if test:
+            for rule in r['cis']+r['custom']:
+                if rule['name'] in test.split(','):
+                    rules.append(rule)
+        else:
+            if c['compliance'].get('custom_rules') and 'custom' in r:
+                rules += r['custom']
+            if 'cis' in r:
+                rules += [x for x in r['cis'] if x.get('level') <= c['compliance'].get('cis_level', 2)]
+        libs.configure_credentials(role, profile, id)
         for rule in rules:
             if not rule.get('regions'):
-                check_rule(rule)
+                queue.append((account, rule, output))
 
         for rule in rules:
             if rule.get('regions'):
                 for region in rule.get('regions'):
-                    helpers.configure_credentials(role, profile, id, region)
+                    libs.configure_credentials(role, profile, id, region)
                     rule['region'] = region
-                    check_rule(rule)
-
-
-def check_rule(rule: str) -> bool:
-    rule_name = f"compliance.{rule['name']}"
-    rule_obj = importlib.import_module(rule_name)
-    rule_fn = getattr(rule_obj, rule['name'])
+                    queue.append((account, rule, output))
     try:
-        data, result = rule_fn(account, rule)
+        if debug:
+            for item in queue:
+                libs.check_rule(item)
+        else:
+            gc.collect()
+            p = multiprocessing.Pool(processes=multiprocessing.cpu_count())
+            p.map(libs.check_rule, queue)
+            p.close()
+            p.join()
     except Exception as e:
         log.exception(e)
-        return False
 
-    results = helpers.evaluate_rule(data, result, account, rule)
-    if results:
-        report = getattr(rule_obj, 'report')
-        for result in results:
-            record = db.get(result)
-            if record['last_result'] == 'NONCOMPLIANT':
-                report(record)
-                break
-    return True
-
+    if output == 'json':
+        report = []
+        db = Database()
+        for key in db.getall():
+            report.append(db.get(key))
+        print(dumps(report, indent=2, sort_keys=True))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='open net scans')
     parser.add_argument('-c', '--config-file', default='config.yaml', help='absolute path to config file')
+    parser.add_argument('-r', '--rules-file', default='rules.yaml', help='absolute path to rules config file')
     parser.add_argument('-l', '--log-file', default=None, help='absolute path to log file')
-    parser.add_argument('--verbose', '-v', action='count', default=0)
+    parser.add_argument('-t', '--test', type=str, default=None, help='Comma seperated Rule name to test')
+    parser.add_argument('-o', '--output', type=str, default='text', help='output options: text | json')
+    parser.add_argument('--verbose', '-v', action='count', default=0, help='use -vvvvv for debug output, remove a "v" for quieter outputs')
+    parser.add_argument('--debug', action='store_true', help='avoids multiprocessing for cleaner stack traces but may be slower')
     args = parser.parse_args()
 
     log_level = args.verbose if args.verbose else 3
-    helpers.setup_logging(log_level, file_path=args.log_file)
-    c = helpers.get_config(config_file=args.config_file)
-
-    main()
-    db.dump()
+    libs.setup_logging(log_level, file_path=args.log_file)
+    c = libs.get_config(config_file=args.config_file, key='config')
+    r = libs.get_config(config_file=args.rules_file, key='rules')
+    main(debug=args.debug, test=args.test, output=args.output)

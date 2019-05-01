@@ -1,10 +1,12 @@
-import helpers
+import libs
+import logging
 
 
+report = libs.report_custom
 def password_policy_on(account, rule_config):
     result = False
     try:
-        iam = helpers.get_client('iam')
+        iam = libs.get_client('iam')
         data = iam.get_account_password_policy().get('PasswordPolicy')
         if data['AllowUsersToChangePassword'] == 'true':
             result = True
@@ -15,17 +17,3 @@ def password_policy_on(account, rule_config):
             raise e
 
     return data, result
-
-
-def report(record):
-    print """
-Rule                  {rule}
-Result                {result}
-Rationale             {desc}
-Recommended Control   {control}
-""".format(
-        rule=record['rule']['name'],
-        result=record['last_result'],
-        desc=record['rule']['purpose'],
-        control=record['rule']['control']
-    )

@@ -1,26 +1,80 @@
-import os, boto3, random, string, json, sys, pytz, dateutil, logging, colorlog
-from os import isatty
+import os
+import boto3
+import random
+import string
+import json
+import sys
+import pytz
+import dateutil
+import logging
+import colorlog
+import pickledb
+import importlib
 from yaml import load, dump
 from os import path, getcwd
 from datetime import datetime
-
-import database as db
-
+from xxhash import xxh32_hexdigest
+from typing import Tuple
 
 credentials = None
-config = None
+config = {}
 
 
-def get_config(config_file: str = None) -> dict:
+class Database:
+    database = None
+
+    def __init__(self):
+        # https://patx.github.io/pickledb/commands.html
+        c = get_config('config')
+        self.database = pickledb.load(os.path.join(
+            c['pickledb']['base_dir'],
+            c['pickledb']['filename']), True)
+
+    def exists(self, key) -> bool:
+        return self.database.exists(str(key))
+
+    def get(self, key):
+        record = self.database.get(str(key))
+        if is_json(record):
+            return json.loads(record)
+        else:
+            return record
+
+    def rem(self, key):
+        return self.database.rem(str(key))
+
+    def deldb(self):
+        return self.database.deldb()
+
+    def getall(self):
+        return self.database.getall()
+
+    def set(self, key, value):
+        if not isinstance(value, str):
+            return self.database.set(str(key), json.dumps(value, default=date_converter))
+        else:
+            return self.database.set(str(key), value)
+
+    def append(self, key, more):
+        return self.database.append(str(key), more)
+
+    def dump(self):
+        return self.database.dump()
+
+def get_config(key: str = None, config_file: str = None) -> dict:
     global config
+    if not key:
+        key = xxh32_hexdigest(bytes(config_file))
+    if key in config:
+        return config[key]
 
-    if not config:
-        if not config_file:
-            config_file = path.join(path.realpath(getcwd()), 'config.yaml')
-        with open(config_file, 'r') as f:
-            config = load(f.read())
+    if not config_file:
+        config_file = path.join(path.realpath(getcwd()), 'config.yaml')
+    with open(config_file, 'r') as f:
+        config[key] = load(f.read())
 
-    return config
+    return config[key]
+
 
 def randomstr(length: int) -> str:
     letters = string.ascii_lowercase
@@ -31,7 +85,7 @@ def setup_logging(log_level: int, file_path: str = None) -> None:
     log = logging.getLogger()
     format_str = '%(asctime)s - %(process)d - %(levelname)-8s - %(message)s'
     date_format = '%Y-%m-%d %H:%M:%S'
-    if isatty(2):
+    if os.isatty(2):
         cformat = '%(log_color)s' + format_str
         colors = {
             'DEBUG': 'reset',
@@ -122,18 +176,19 @@ def is_json(myjson: str) -> bool:
     return True
 
 
-def evaluate_rule(data: dict, result: str, account: dict, rule_config: dict, prefix: str = None) -> list:
-    results = []
+def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, prefix: str = None) -> list:
+    db = Database()
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    record_key = "{prefix}{label}-{id}".format(
-        label=rule_config['name'], id=account['id'], prefix=prefix or '')
+    record_key = f"{prefix or ''}{rule_config['name']}-{account['id']}"
     if rule_config.get('region'):
         record_key += f"-{rule_config['region']}"
     result_time = {
         'time': now,
-        'compliance': result
+        'compliance': result,
+        'data': data
     }
     result_obj = {
+        'id': xxh32_hexdigest(record_key),
         'key': record_key,
         'alias': account['alias'],
         'account': account['id'],
@@ -148,10 +203,36 @@ def evaluate_rule(data: dict, result: str, account: dict, rule_config: dict, pre
         record['last_result'] = result_obj['last_result']
         record['results'].append(result_time)
         db.set(record_key, record)
+        result_obj = record
     else:
         db.set(record_key, result_obj)
-    results.append(record_key)
-    return results
+    db.dump()
+    return result_obj
+
+
+def check_rule(inputs: Tuple[dict, dict]) -> bool:
+    account, rule, output = inputs
+    log = logging.getLogger()
+    rule_name = f"compliance.{rule['name']}"
+    rule_obj = importlib.import_module(rule_name)
+    rule_fn = getattr(rule_obj, rule['name'])
+    log.debug(f"Checking rule {rule['name']} in account {account['alias']} [{account['id']}]")
+    try:
+        data, result = rule_fn(account, rule)
+    except Exception as e:
+        log.exception(e)
+        return False
+
+    record = evaluate_result(data, result, account, rule)
+    if record and output == 'text':
+        report = getattr(rule_obj, 'report')
+        text = report(record)
+        if record['last_result'] == 'NONCOMPLIANT':
+            log.warn(text)
+        else:
+            log.info(text)
+
+    return True
 
 
 def to_iso8601(when=None, tz=pytz.timezone('UTC')):
@@ -168,3 +249,20 @@ def from_iso8601(when=None, tz=pytz.timezone('UTC')):
     if not _when.tzinfo:
         _when = tz.localize(_when)
     return _when
+
+def report_custom(record: dict) -> str:
+    return f"""\t\t\t\t\t\tRULE-NS0-{record['id']}
+Rule                  {record['rule']['name']}
+Result                {record['last_result']}
+Rationale             {record['rule']['purpose']}
+Recommended Control   {record['rule']['control']}
+"""
+
+def report_cis(record: dict) -> str:
+    return f"""\t\t\t\t\t\tCIS-{'S' if record['rule']['scored'] else 'NS'}{record['rule']['level']}-{record['id']}
+Rule                  {record['rule']['name']}
+Result                {record['last_result']}
+Rationale             {record['rule']['purpose']}
+Recommended Control   {record['rule']['control']}
+CIS version {record['rule']['version']} Level {record['rule']['level']} Recommendation {record['rule']['recommendation']}({'Scored' if record['rule']['scored'] else 'Not Scored'})
+"""

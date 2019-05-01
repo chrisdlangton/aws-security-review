@@ -1,23 +1,24 @@
-import helpers
+import libs, logging
 import time
 import pytz
 from datetime import datetime
 
 
+report = libs.report_cis
 def ensure_access_keys_are_rotated_every_90_days_or_less(account, rule_config):
     result = False
 
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    iam = helpers.get_client('iam')
+    iam = libs.get_client('iam')
     response = iam.generate_credential_report()['State']
     if response == 'COMPLETE':
         content = iam.get_credential_report()['Content']
         users = content.splitlines()
-        cols = users.pop(0).split(',')
+        cols = users.pop(0).decode().split(',')
 
         output = list()
         for s in users:
-            report = {cols[k]: item for k, item in enumerate(s.split(","))}
+            report = {cols[k]: item for k, item in enumerate(s.decode().split(","))}
             if report['user'] == '<root_account>':
                 continue
 
@@ -25,14 +26,14 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(account, rule_config):
                     report['access_key_2_active'] == 'false'):
                 continue
 
-            user_creation_time = helpers.from_iso8601(
+            user_creation_time = libs.from_iso8601(
                 report['user_creation_time'])
             delta = now - user_creation_time
             if delta.days < 90:
                 continue
 
             if report['access_key_1_active'] == 'true':
-                access_key_1_last_rotated = helpers.from_iso8601(
+                access_key_1_last_rotated = libs.from_iso8601(
                     report['access_key_1_last_rotated'])
                 delta = now - access_key_1_last_rotated
                 if delta.days >= 90:
@@ -41,7 +42,7 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(account, rule_config):
                     break
 
             if report['access_key_2_active'] == 'true':
-                access_key_2_last_rotated = helpers.from_iso8601(
+                access_key_2_last_rotated = libs.from_iso8601(
                     report['access_key_2_last_rotated'])
                 delta = now - access_key_2_last_rotated
                 if delta.days >= 90:
@@ -57,22 +58,3 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(account, rule_config):
     else:
         time.sleep(3)
         return ensure_access_keys_are_rotated_every_90_days_or_less(account, rule_config)
-
-
-def report(record):
-    print """
-CIS version {version} Level {level} Recommendation {recommendation} ({scored})
-Rule                  {rule}
-Result                {result}
-Rationale             {desc}
-Recommended Control   {control}
-""".format(
-        rule=record['rule']['name'],
-        result=record['last_result'],
-        desc=record['rule']['purpose'],
-        control=record['rule']['control'],
-        version=record['rule']['version'],
-        level=record['rule']['level'],
-        recommendation=record['rule']['recommendation'],
-        scored='Scored' if record['rule']['scored'] else 'Not Scored'
-    )

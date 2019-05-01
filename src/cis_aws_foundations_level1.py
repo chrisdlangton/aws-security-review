@@ -1,8 +1,6 @@
 from datetime import datetime
-from config import config
-from compliance import rules
 from yaml import load, dump
-import helpers
+import libs
 import boto3
 import pytz
 import importlib
@@ -22,7 +20,7 @@ def check_rule(rule):
         print e
         return False
 
-    results = helpers.evaluate_rule(data, result, account, rule)
+    results = libs.evaluate_rule(data, result, account, rule)
     if results:
         report = getattr(rule_obj, 'report')
         for result in results:
@@ -46,7 +44,7 @@ for account in config['accounts']:
     if account.get('profile'):
         profile = account['profile']
 
-    helpers.configure_credentials(role, profile, id)
+    libs.configure_credentials(role, profile, id)
 
     for rule in rules:
         if not rule.get('regions'):
@@ -55,7 +53,7 @@ for account in config['accounts']:
     for rule in rules:
         if rule.get('regions'):
             for region in rule.get('regions'):
-                helpers.configure_credentials(role, profile, id, region)
+                libs.configure_credentials(role, profile, id, region)
                 rule['region'] = region
                 check_rule(rule)
 

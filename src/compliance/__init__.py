@@ -1,6 +1,6 @@
 import os
 from yaml import load
-#TODO: put this in helpers
+#TODO: put this in libs
 
 CONFIG_PATH = os.path.realpath(
     os.path.join(os.getcwd(), 'rules.yaml')) #TODO: make this an argument
