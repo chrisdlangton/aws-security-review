@@ -34,8 +34,6 @@ Attributes:
 
 Todo:
     * Finish CIS test proceedures
-    * ignore list on rule name
-    * ignore list on report id
 
 """
 import boto3
