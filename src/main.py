@@ -101,12 +101,25 @@ def main(debug, test, output):
     except Exception as e:
         log.exception(e)
 
+    db = Database()
     if output == 'json':
         report = []
-        db = Database()
         for key in db.getall():
             report.append(db.get(key))
         print(dumps(report, indent=2, sort_keys=True))
+    elif output == 'text':
+        result_agg = {
+            'NONCOMPLIANT': 0,
+            'COMPLIES': 0,
+        }
+        for key in db.getall():
+            record = db.get(key)
+            result_agg[record['last_result']] += 1
+        total = result_agg['NONCOMPLIANT'] + result_agg['COMPLIES']
+        if result_agg['NONCOMPLIANT'] != 0:
+            log.error(f"Scanned {total} Rules with {result_agg['NONCOMPLIANT']} NONCOMPLIANT issues found")
+        else:
+            log.info(f"COMPLIANT ({total} Rules)")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='open net scans')

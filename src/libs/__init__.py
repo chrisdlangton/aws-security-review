@@ -264,5 +264,5 @@ Rule                  {record['rule']['name']}
 Result                {record['last_result']}
 Rationale             {record['rule']['purpose']}
 Recommended Control   {record['rule']['control']}
-CIS version {record['rule']['version']} Level {record['rule']['level']} Recommendation {record['rule']['recommendation']}({'Scored' if record['rule']['scored'] else 'Not Scored'})
+CIS version {record['rule']['version']} Level {record['rule']['level']} Recommendation {record['rule']['recommendation']} ({'Scored' if record['rule']['scored'] else 'Not Scored'})
 """

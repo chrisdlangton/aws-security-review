@@ -34,23 +34,23 @@ Resources:
       UserName:
         Ref: UserApp
   AppRole:
-    Type: "AWS::IAM::Role"
-    Path: "/"
+    Type: AWS::IAM::Role
     Properties:
+      Path: "/"
       AppRolePolicyDocument:
-      Version: "2012-10-17"
-      Statement:
-        - Effect: "Allow"Formation
-          Resource: "*"
-          Action:
-            - report:GenerateCredentialReport
-            - report:GetCredentialReport
-            - iam:Get*
-            - iam:List*
-            - cloudtrail:Describe*
-            - config:Describe*
-            - ec2:Describe*
-            - vpc:Describe*
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"Formation
+            Resource: "*"
+            Action:
+              - report:GenerateCredentialReport
+              - report:GetCredentialReport
+              - iam:Get*
+              - iam:List*
+              - cloudtrail:Describe*
+              - config:Describe*
+              - ec2:Describe*
+              - vpc:Describe*
 Outputs:
   AccessKey:
     Value:
