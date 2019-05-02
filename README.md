@@ -2,6 +2,64 @@
 
 Just a Python program for dealing with custom security tests of AWS usage, has built-in support for the Center for Internet Security (CIS) benchmarks.
 
+## Prerequisites
+
+1. Using CloudFormation create an IAM User, IAM Policy, and IAM Role for this tool
+
+```yaml
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Security Review App
+Resources:
+  AssumeAppRole:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Resource:
+                - arn:aws:iam::*:role/app-aws-security-review
+            Action:
+              - sts:AssumeRole
+  UserApp:
+    Type: "AWS::IAM::User"
+    Properties:
+      UserName: aws-security-review
+      ManagedPolicyArns:
+        - !Ref AssumeAppRole
+  UserAppAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName:
+        Ref: UserApp
+  AppRole:
+    Type: "AWS::IAM::Role"
+    Path: "/"
+    Properties:
+      AppRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: "Allow"Formation
+          Resource: "*"
+          Action:
+            - report:GenerateCredentialReport
+            - report:GetCredentialReport
+            - iam:Get*
+            - iam:List*
+            - cloudtrail:Describe*
+            - config:Describe*
+            - ec2:Describe*
+            - vpc:Describe*
+Outputs:
+  AccessKey:
+    Value:
+      Ref: UserAppAccessKey
+  SecretKey:
+    Value:
+      Fn::GetAtt: ["UserAppAccessKey", "SecretAccessKey"]
+```
+
 ## Installation
 
 1. clone this repo
