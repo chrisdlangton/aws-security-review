@@ -67,9 +67,8 @@ def get_config(key: str = None, config_file: str = None) -> dict:
         key = xxh32_hexdigest(bytes(config_file))
     if key in config:
         return config[key]
-
     if not config_file:
-        config_file = path.join(path.realpath(getcwd()), 'config.yaml')
+        return dict()
     with open(config_file, 'r') as f:
         config[key] = load(f.read())
 

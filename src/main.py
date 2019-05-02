@@ -78,6 +78,12 @@ def main(debug, test, output):
                 rules += r['custom']
             if 'cis' in r:
                 rules += [x for x in r['cis'] if x.get('level') <= c['compliance'].get('cis_level', 2)]
+        ignore_list = libs.get_config('ignore')
+        if ignore_list and 'rules' in ignore_list:
+            for rule in rules:
+                if rule['name'] in ignore_list['rules']:
+                    rules.remove(rule)
+
         libs.configure_credentials(role, profile, id)
         for rule in rules:
             if not rule.get('regions'):
@@ -106,6 +112,11 @@ def main(debug, test, output):
     if output == 'json':
         report = []
         for key in db.getall():
+            if ignore_list and 'findings' in ignore_list:
+                for finding in ignore_list['findings']:
+                    if finding['id'] == key['id']:
+                        pass #TODO: deal with finding ignroes
+
             report.append(db.get(key))
         print(dumps(report, indent=2, sort_keys=True))
     elif output == 'text':
@@ -127,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config-file', default='config.yaml', help='absolute path to config file')
     parser.add_argument('-r', '--rules-file', default='rules.yaml', help='absolute path to rules config file')
     parser.add_argument('-l', '--log-file', default=None, help='absolute path to log file')
+    parser.add_argument('-i', '--ignore-file', default=None, help='absolute path to ignore file')
     parser.add_argument('-t', '--test', type=str, default=None, help='Comma seperated Rule name to test')
     parser.add_argument('-o', '--output', type=str, default='text', help='output options: text | json')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='use -vvvvv for debug output, remove a "v" for quieter outputs')
@@ -135,6 +147,8 @@ if __name__ == '__main__':
 
     log_level = args.verbose if args.verbose else 3
     libs.setup_logging(log_level, file_path=args.log_file)
-    c = libs.get_config(config_file=args.config_file, key='config')
-    r = libs.get_config(config_file=args.rules_file, key='rules')
+    libs.get_config(config_file=args.config_file, key='config')
+    libs.get_config(config_file=args.rules_file, key='rules')
+    if args.ignore_file:
+        libs.get_config(config_file=args.ignore_file, key='ignore')
     main(debug=args.debug, test=args.test, output=args.output)
