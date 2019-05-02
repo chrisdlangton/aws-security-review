@@ -61,18 +61,18 @@ class Database:
     def dump(self):
         return self.database.dump()
 
-def get_config(key: str = None, config_file: str = None) -> dict:
+def get_config(key: str = None, config_file: str = None, default=None) -> dict:
     global config
     if not key:
         key = xxh32_hexdigest(bytes(config_file))
     if key in config:
-        return config[key]
+        return config[key] or default
     if not config_file:
-        return dict()
+        return default
     with open(config_file, 'r') as f:
-        config[key] = load(f.read())
+        config[key] = load(f.read()) or default
 
-    return config[key]
+    return config[key] or default
 
 
 def randomstr(length: int) -> str:
@@ -175,7 +175,7 @@ def is_json(myjson: str) -> bool:
     return True
 
 
-def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, prefix: str = None) -> list:
+def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, prefix: str = None) -> dict:
     db = Database()
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
     record_key = f"{prefix or ''}{rule_config['name']}-{account['id']}"
@@ -186,8 +186,9 @@ def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, p
         'compliance': result,
         'data': data
     }
+    id = xxh32_hexdigest(record_key)
     result_obj = {
-        'id': xxh32_hexdigest(record_key),
+        'id': id,
         'key': record_key,
         'alias': account['alias'],
         'account': account['id'],
@@ -196,6 +197,14 @@ def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, p
         'last_result': 'COMPLIES' if result else 'NONCOMPLIANT',
         'results':  [result_time]
     }
+    ignore_conf = get_config('ignore', default={})
+    ignore_list = [] if 'findings' not in ignore_conf else ignore_conf['findings'].get(
+        account['alias'], []) + ignore_conf['findings'].get(account['id'], [])
+
+    for finding in ignore_list:
+        if finding['id'] == id and  datetime.strptime(finding['ignore_until'], '%Y-%m-%d') >= datetime.now():
+            return dict()
+
     if db.exists(record_key):
         record = db.get(record_key)
         db.rem(record_key)

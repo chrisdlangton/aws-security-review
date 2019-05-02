@@ -10,14 +10,17 @@ You may follow any single test proceedure to apply your own custom
 proceedures
 
 Example:
-    $ ./src/main.py -vvvv
+    $ ./src/main.py -vvvv --debug --ignore-file ignores.yaml
 
 Attributes:
+
   -h --help             show this help message and exit
   -c --config-file CONFIG_FILE
                         absolute path to config file
   -r --rules-file RULES_FILE
                         absolute path to rules config file
+  -i --ignore-file IGNORE_FILE
+                        absolute path to ignore config file
   -l --log-file LOG_FILE
                         absolute path to log file
   -t --test TEST
@@ -33,6 +36,7 @@ Todo:
     * Finish CIS test proceedures
     * ignore list on rule name
     * ignore list on report id
+
 """
 import boto3
 import pytz
@@ -69,20 +73,20 @@ def main(debug, test, output):
             role = account['assumeRole']
         if account.get('profile'):
             profile = account['profile']
+
+        ignore_conf = libs.get_config('ignore', default={})
+        ignore_list = [] if 'rules' not in ignore_conf else ignore_conf['rules'].get(
+            account['alias'], []) + ignore_conf['rules'].get(account['id'], [])
+
         if test:
             for rule in r['cis']+r['custom']:
-                if rule['name'] in test.split(','):
+                if rule['name'] in test.split(',') and rule['name'] not in ignore_list:
                     rules.append(rule)
         else:
             if c['compliance'].get('custom_rules') and 'custom' in r:
                 rules += r['custom']
             if 'cis' in r:
                 rules += [x for x in r['cis'] if x.get('level') <= c['compliance'].get('cis_level', 2)]
-        ignore_list = libs.get_config('ignore')
-        if ignore_list and 'rules' in ignore_list:
-            for rule in rules:
-                if rule['name'] in ignore_list['rules']:
-                    rules.remove(rule)
 
         libs.configure_credentials(role, profile, id)
         for rule in rules:
@@ -112,12 +116,14 @@ def main(debug, test, output):
     if output == 'json':
         report = []
         for key in db.getall():
+            ignore = False
             if ignore_list and 'findings' in ignore_list:
                 for finding in ignore_list['findings']:
                     if finding['id'] == key['id']:
-                        pass #TODO: deal with finding ignroes
-
-            report.append(db.get(key))
+                        ignore = True
+                        break
+            if not ignore:
+                report.append(db.get(key))
         print(dumps(report, indent=2, sort_keys=True))
     elif output == 'text':
         result_agg = {
