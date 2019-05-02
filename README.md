@@ -59,8 +59,7 @@ Resources:
           - Effect: Allow
             Resource: "*"
             Action:
-              - report:GenerateCredentialReport
-              - report:GetCredentialReport
+              - iam:GenerateCredentialReport
               - iam:Get*
               - iam:List*
               - cloudtrail:Describe*
