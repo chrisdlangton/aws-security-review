@@ -33,14 +33,16 @@ Resources:
     Properties:
       UserName:
         Ref: UserApp
-  AppRole:
-    Type: AWS::IAM::Role
+  AppPolicy:
+    Type: "AWS::IAM::Policy"
     Properties:
-      Path: "/"
-      AppRolePolicyDocument:
+      PolicyName: "app-aws-security-review"
+      Roles:
+        - !Ref AppRole
+      PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: "Allow"Formation
+          - Effect: "Allow"
             Resource: "*"
             Action:
               - report:GenerateCredentialReport
@@ -51,6 +53,19 @@ Resources:
               - config:Describe*
               - ec2:Describe*
               - vpc:Describe*
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS:
+                - "112398043980"
+            Action:
+              - "sts:AssumeRole"
 Outputs:
   AccessKey:
     Value:
