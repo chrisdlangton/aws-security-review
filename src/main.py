@@ -61,7 +61,8 @@ def main(debug, test, output):
     for account in c['accounts']:
         id = account['id']
         log.info(f'Scanning AWS Account: {id}')
-
+        if 'assumeRole' in account:
+            log.info(f'Using IAM Role: {account["assumeRole"]}')
         role = None
         profile = None
         if account.get('assumeRole'):

@@ -11,6 +11,20 @@ Just a Python program for dealing with custom security tests of AWS usage, has b
 AWSTemplateFormatVersion: "2010-09-09"
 Description: AWS Security Review App
 Resources:
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "app-aws-security-review"
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS:
+                - "{your aws account number}"
+            Action:
+              - "sts:AssumeRole"
   AssumeAppRole:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -23,7 +37,7 @@ Resources:
             Action:
               - sts:AssumeRole
   UserApp:
-    Type: "AWS::IAM::User"
+    Type: AWS::IAM::User
     Properties:
       UserName: aws-security-review
       ManagedPolicyArns:
@@ -34,7 +48,7 @@ Resources:
       UserName:
         Ref: UserApp
   AppPolicy:
-    Type: "AWS::IAM::Policy"
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: "app-aws-security-review"
       Roles:
@@ -42,7 +56,7 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: "Allow"
+          - Effect: Allow
             Resource: "*"
             Action:
               - report:GenerateCredentialReport
@@ -53,19 +67,6 @@ Resources:
               - config:Describe*
               - ec2:Describe*
               - vpc:Describe*
-  AppRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Path: "/"
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              AWS:
-                - "112398043980"
-            Action:
-              - "sts:AssumeRole"
 Outputs:
   AccessKey:
     Value:
