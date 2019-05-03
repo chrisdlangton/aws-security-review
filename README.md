@@ -79,11 +79,13 @@ Outputs:
 
 1. clone this repo
 
-2. install dependancies, tested against python3.7
+2. install dependencies, tested against python3.7
 
 ```bash
 pip install -r requirements.txt
 ```
+
+3. create a `config.yaml` fromt he example provided
 
 ## Usage
 

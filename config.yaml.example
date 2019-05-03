@@ -1,12 +1,12 @@
 ---
 pickledb:
-  base_dir: ./
-  filename: results.db
+  base_dir: /tmp
+  filename: aws-security-review.db
 accounts:
   - id: 112398043980
     alias: langton
-    profile: chris
-    assumeRole: read-only
+    profile: aws-security-review
+    assumeRole: app-aws-security-review
 compliance:
   cis_level: 2
   custom_rules: True
