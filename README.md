@@ -118,6 +118,8 @@ Dev helper scripts make use of docker-ce (go ahead and update these for more gen
 
 5. Refactor codebase to use recommended controls for auto-remediation actions, where available.
 
+6. Maybe support risk vuln aggregators that don't themselves support standardards (STIX or CVRF), hopefully they start caring about standards before I get to this
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

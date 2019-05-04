@@ -186,21 +186,21 @@ def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, p
     record_key = f"{prefix or ''}{rule_config['name']}-{account['id']}"
     if rule_config.get('region'):
         record_key += f"-{rule_config['region']}"
-    result_time = {
-        'time': now,
+    finding_result = {
+        'time': now.isoformat(),
         'compliance': result,
-        'data': data
+        'data': data,
+        'rule': rule_config
     }
     id = xxh32_hexdigest(record_key)
     result_obj = {
         'id': id,
         'key': record_key,
+        'rule_name': rule_config['name'],
+        'last_result': 'COMPLIES' if result else 'NONCOMPLIANT',
         'alias': account['alias'],
         'account': account['id'],
-        'rule': rule_config,
-        'data': data,
-        'last_result': 'COMPLIES' if result else 'NONCOMPLIANT',
-        'results':  [result_time]
+        'findings':  [finding_result]
     }
     ignore_conf = get_config('ignore', default={})
     ignore_list = [] if 'findings' not in ignore_conf else ignore_conf['findings'].get(
@@ -214,7 +214,7 @@ def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, p
         record = db.get(record_key)
         db.rem(record_key)
         record['last_result'] = result_obj['last_result']
-        record['results'].append(result_time)
+        record['findings'].append(finding_result)
         db.set(record_key, record)
         result_obj = record
     else:
@@ -265,17 +265,17 @@ def from_iso8601(when=None, tz=pytz.timezone('UTC')):
 
 def report_custom(record: dict) -> str:
     return f"""\t\t\t\t\t\tRULE-NS0-{record['id']}
-Rule                  {record['rule']['name']}
+Rule                  {record['rule_name']}
 Result                {record['last_result']}
-Rationale             {record['rule']['purpose']}
-Recommended Control   {record['rule']['control']}
+Rationale             {record['findings'][0]['rule']['purpose']}
+Recommended Control   {record['findings'][0]['rule']['control']}
 """
 
 def report_cis(record: dict) -> str:
-    return f"""\t\t\t\t\t\tCIS-{'S' if record['rule']['scored'] else 'NS'}{record['rule']['level']}-{record['id']}
-Rule                  {record['rule']['name']}
+    return f"""\t\t\t\t\t\tCIS-{'S' if record['findings'][0]['rule']['scored'] else 'NS'}{record['findings'][0]['rule']['level']}-{record['id']}
+Rule                  {record['rule_name']}
 Result                {record['last_result']}
-Rationale             {record['rule']['purpose']}
-Recommended Control   {record['rule']['control']}
-CIS version {record['rule']['version']} Level {record['rule']['level']} Recommendation {record['rule']['recommendation']} ({'Scored' if record['rule']['scored'] else 'Not Scored'})
+Rationale             {record['findings'][0]['rule']['purpose']}
+Recommended Control   {record['findings'][0]['rule']['control']}
+CIS version {record['findings'][0]['rule']['version']} Level {record['findings'][0]['rule']['level']} Recommendation {record['findings'][0]['rule']['recommendation']} ({'Scored' if record['findings'][0]['rule']['scored'] else 'Not Scored'})
 """

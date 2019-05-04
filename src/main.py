@@ -91,7 +91,6 @@ def main(debug, test, output):
         for rule in rules:
             if rule.get('regions'):
                 for region in rule.get('regions'):
-                    libs.configure_credentials(role, profile, id, region)
                     rule['region'] = region
                     queue.append((account, rule, output))
     try:
