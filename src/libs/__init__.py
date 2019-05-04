@@ -47,7 +47,12 @@ class Database:
         return self.database.deldb()
 
     def getall(self):
-        return self.database.getall()
+        records = []
+        for key in self.database.getall():
+            record = self.get(key)
+            if record:
+                records.append(record)
+        return records
 
     def set(self, key, value):
         if not isinstance(value, str):
@@ -219,26 +224,26 @@ def evaluate_result(data: dict, result: str, account: dict, rule_config: dict, p
 
 
 def check_rule(inputs: Tuple[dict, dict]) -> bool:
-    account, rule, output = inputs
-    log = logging.getLogger()
-    rule_name = f"compliance.{rule['name']}"
-    rule_obj = importlib.import_module(rule_name)
-    rule_fn = getattr(rule_obj, rule['name'])
-    log.debug(f"Checking rule {rule['name']} in account {account['alias']} [{account['id']}]")
     try:
+        account, rule, output = inputs
+        log = logging.getLogger()
+        rule_name = f"compliance.{rule['name']}"
+        rule_obj = importlib.import_module(rule_name)
+        rule_fn = getattr(rule_obj, rule['name'])
+        log.debug(f"Checking rule {rule['name']} in account {account['alias']} [{account['id']}]")
         data, result = rule_fn(account, rule)
+        record = evaluate_result(data, result, account, rule)
+        if record and output == 'text':
+            report = getattr(rule_obj, 'report')
+            text = report(record)
+            if record['last_result'] == 'NONCOMPLIANT':
+                log.warn(text)
+            else:
+                log.info(text)
     except Exception as e:
         log.exception(e)
+        log.warn(f"Failed on rule {rule['name']} in account {account['alias']} [{account['id']}]")
         return False
-
-    record = evaluate_result(data, result, account, rule)
-    if record and output == 'text':
-        report = getattr(rule_obj, 'report')
-        text = report(record)
-        if record['last_result'] == 'NONCOMPLIANT':
-            log.warn(text)
-        else:
-            log.info(text)
 
     return True
 

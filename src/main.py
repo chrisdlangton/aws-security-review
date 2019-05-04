@@ -110,23 +110,22 @@ def main(debug, test, output):
     db = Database()
     if output == 'json':
         report = []
-        for key in db.getall():
+        for record in db.getall():
             ignore = False
             if ignore_list and 'findings' in ignore_list:
                 for finding in ignore_list['findings']:
-                    if finding['id'] == key['id']:
+                    if finding['id'] == record['id']:
                         ignore = True
                         break
             if not ignore:
-                report.append(db.get(key))
+                report.append(record)
         print(dumps(report, indent=2, sort_keys=True))
     elif output == 'text':
         result_agg = {
             'NONCOMPLIANT': 0,
             'COMPLIES': 0,
         }
-        for key in db.getall():
-            record = db.get(key)
+        for record in db.getall():
             result_agg[record['last_result']] += 1
         total = result_agg['NONCOMPLIANT'] + result_agg['COMPLIES']
         if result_agg['NONCOMPLIANT'] != 0:
