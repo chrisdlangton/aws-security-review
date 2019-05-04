@@ -104,6 +104,18 @@ Dev helper scripts make use of docker-ce (go ahead and update these for more gen
 ./test.sh src/main.py -vvvv --debug
 ```
 
+## Roadmap
+
+1. Complete CIS Benchmark for AWS
+
+2. Output format [STIX](https://github.com/stixproject/python-stix)
+
+3. Send findings to [AWS SecurityHub](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-findings-providers.html#securityhub-custom-providers)
+
+4. Output format [CVRF](https://www.icasi.org/cvrf/)
+
+5. Refactor codebase to use recommended controls for auto-remediation actions, where available.
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

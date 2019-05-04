@@ -32,9 +32,6 @@ Attributes:
   --debug
                         avoids multiprocessing for cleaner stack traces but may be slower
 
-Todo:
-    * Finish CIS test proceedures
-
 """
 import boto3
 import pytz
