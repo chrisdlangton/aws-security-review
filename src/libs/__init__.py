@@ -10,7 +10,7 @@ import logging
 import colorlog
 import pickledb
 import importlib
-from yaml import load, dump
+import yaml
 from os import path, getcwd
 from datetime import datetime
 from xxhash import xxh32_hexdigest
@@ -75,7 +75,7 @@ def get_config(key: str = None, config_file: str = None, default=None) -> dict:
     if not config_file:
         return default
     with open(config_file, 'r') as f:
-        config[key] = load(f.read()) or default
+        config[key] = yaml.load(f.read(), Loader=yaml.SafeLoader) or default
 
     return config[key] or default
 
