@@ -1,4 +1,4 @@
-# AWS Security Review
+# Reconnoitre - AWS Security Review utility
 
 Just a Python program for dealing with custom security tests of AWS usage, has built-in support for the Center for Internet Security (CIS) benchmarks.
 
@@ -9,12 +9,12 @@ Just a Python program for dealing with custom security tests of AWS usage, has b
 ```yaml
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Security Review App
+Description: Reconnoitre - AWS Security Review App
 Resources:
   AppRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "app-aws-security-review"
+      RoleName: "app-reconnoitre"
       Path: "/"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -33,13 +33,13 @@ Resources:
         Statement:
           - Effect: Allow
             Resource:
-                - arn:aws:iam::*:role/app-aws-security-review
+                - arn:aws:iam::*:role/app-reconnoitre
             Action:
               - sts:AssumeRole
   UserApp:
     Type: AWS::IAM::User
     Properties:
-      UserName: aws-security-review
+      UserName: reconnoitre
       ManagedPolicyArns:
         - !Ref AssumeAppRole
   UserAppAccessKey:
@@ -50,7 +50,7 @@ Resources:
   AppPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: "app-aws-security-review"
+      PolicyName: "app-reconnoitre"
       Roles:
         - !Ref AppRole
       PolicyDocument:
