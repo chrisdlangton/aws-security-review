@@ -1,10 +1,10 @@
 import libs
 import logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances(account, rule_config):
-    result = False
+def ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
     ec2 = libs.get_client('ec2')
     data = list()
     instances = list()
@@ -16,6 +16,7 @@ def ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances(ac
             data.append(instance)
 
     if not data:
-        result = True
-
-    return data, result
+        result = Reconnoitre.COMPLIANT
+    rule.setData(data)
+    rule.setResult(result)
+    return rule

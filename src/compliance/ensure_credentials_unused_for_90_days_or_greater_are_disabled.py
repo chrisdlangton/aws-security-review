@@ -3,10 +3,11 @@ import logging
 import time
 import pytz
 from datetime import datetime
+from compliance import Reconnoitre, BaseScan
 
-report = libs.report_cis
-def ensure_credentials_unused_for_90_days_or_greater_are_disabled(account, rule_config):
-    result = False
+
+def ensure_credentials_unused_for_90_days_or_greater_are_disabled(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
     iam = libs.get_client('iam')
@@ -58,11 +59,12 @@ def ensure_credentials_unused_for_90_days_or_greater_are_disabled(account, rule_
                     output.append('cert_2_active %d days ago' % delta.days)
                     break
 
-            result = True
+            result = Reconnoitre.COMPLIANT
             break
         # print '\n'.join(output)
-
-        return content, result
+        rule.setData(content)
+        rule.setResult(result)
+        return rule
     else:
         time.sleep(3)
-        return ensure_credentials_unused_for_90_days_or_greater_are_disabled(account, rule_config)
+        return ensure_credentials_unused_for_90_days_or_greater_are_disabled(rule)

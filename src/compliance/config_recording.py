@@ -1,14 +1,16 @@
 import libs, logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_custom
-def config_recording(account, rule_config):
+def config_recording(rule: BaseScan):
     result = False
 
     aws_config = libs.get_client('config')
-    data = aws_config.describe_configuration_recorder_status()[
-        'ConfigurationRecordersStatus']
+    data = aws_config.describe_configuration_recorder_status()['ConfigurationRecordersStatus']
     for recorder in data:
-        result = result or recorder['recording']
+        if recorder['recording']:
+            result = result or recorder['recording']
 
-    return data, result
+    rule.setData(data)
+    rule.setResult(Reconnoitre.COMPLIANT if result else Reconnoitre.NON_COMPLIANT)
+    return rule

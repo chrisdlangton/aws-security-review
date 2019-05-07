@@ -1,11 +1,13 @@
 import libs
+from compliance import Reconnoitre, BaseScan
 
 
 FIELD_ACCESS_KEY_1_ACTIVE = 8
 FIELD_ACCESS_KEY_2_ACTIVE = 13
-report = libs.report_cis
-def ensure_no_root_account_access_key_exists(account, rule_config):
-    result = False
+
+
+def ensure_no_root_account_access_key_exists(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     iam = libs.get_client('iam')
     content = iam.get_credential_report()['Content']
@@ -16,6 +18,7 @@ def ensure_no_root_account_access_key_exists(account, rule_config):
         if '<root_account>' in user:
             user_values = user.split(',')
             if user_values[FIELD_ACCESS_KEY_1_ACTIVE].lower() == 'false' and user_values[FIELD_ACCESS_KEY_2_ACTIVE].lower() == 'false':
-                result = True
-
-    return content, result
+                result = Reconnoitre.COMPLIANT
+    rule.setData(content)
+    rule.setResult(result)
+    return rule

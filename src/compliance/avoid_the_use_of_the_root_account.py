@@ -1,10 +1,10 @@
 import libs, time, pytz, logging
 from datetime import datetime
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def avoid_the_use_of_the_root_account(account, rule_config):
-    result = False
+def avoid_the_use_of_the_root_account(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
     iam = libs.get_client('iam')
@@ -21,41 +21,43 @@ def avoid_the_use_of_the_root_account(account, rule_config):
             password_last_used = libs.from_iso8601(
                 report['password_last_used'])
             delta = now - password_last_used
-            if delta.days <= rule_config['settings']['password_used']:
+            if delta.days <= rule.settings.get('password_used'):
                 break
 
             if report['access_key_1_active'] == 'true':
                 access_key_1_last_used_date = libs.from_iso8601(
                     report['access_key_1_last_used_date'])
                 delta = now - access_key_1_last_used_date
-                if delta.days <= rule_config['settings']['access_key_used']:
+                if delta.days <= rule.settings.get('access_key_used'):
                     break
 
             if report['access_key_2_active'] == 'true':
                 access_key_2_last_used_date = libs.from_iso8601(
                     report['access_key_2_last_used_date'])
                 delta = now - access_key_2_last_used_date
-                if delta.days <= rule_config['settings']['access_key_used']:
+                if delta.days <= rule.settings.get('access_key_used'):
                     break
 
             if report['cert_1_active'] == 'true':
                 cert_1_last_rotated = libs.from_iso8601(
                     report['cert_1_last_rotated'])
                 delta = now - cert_1_last_rotated
-                if delta.days <= rule_config['settings']['certificate_rotated']:
+                if delta.days <= rule.settings.get('certificate_rotated'):
                     break
 
             if report['cert_2_active'] == 'true':
                 cert_2_last_rotated = libs.from_iso8601(
                     report['cert_2_last_rotated'])
                 delta = now - cert_2_last_rotated
-                if delta.days <= rule_config['settings']['certificate_rotated']:
+                if delta.days <= rule.settings.get('certificate_rotated'):
                     break
 
-            result = True
+            result = Reconnoitre.COMPLIANT
             break
 
-        return content, result
+        rule.setData(content)
+        rule.setResult(result)
+        return rule
     else:
         time.sleep(3)
-        return avoid_the_use_of_the_root_account(account, rule_config)
+        return avoid_the_use_of_the_root_account(rule)

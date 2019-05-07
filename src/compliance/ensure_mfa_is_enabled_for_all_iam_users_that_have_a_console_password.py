@@ -3,11 +3,11 @@ import logging
 import time
 import pytz
 from datetime import datetime
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password(account, rule_config):
-    result = False
+def ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     iam = libs.get_client('iam')
     response = iam.generate_credential_report()['State']
@@ -23,10 +23,11 @@ def ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password(account
             if report['password_enabled'] == 'true' and report['mfa_active'] != 'true':
                 break
 
-            result = True
+            result = Reconnoitre.COMPLIANT
             break
-
-        return content, result
+        rule.setData(content)
+        rule.setResult(result)
+        return rule
     else:
         time.sleep(3)
-        return ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password(account, rule_config)
+        return ensure_mfa_is_enabled_for_all_iam_users_that_have_a_console_password(rule)

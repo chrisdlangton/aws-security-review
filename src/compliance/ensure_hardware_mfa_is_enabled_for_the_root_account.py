@@ -1,10 +1,10 @@
 import libs
 import logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def ensure_hardware_mfa_is_enabled_for_the_root_account(account, rule_config):
-    result = False
+def ensure_hardware_mfa_is_enabled_for_the_root_account(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     iam = libs.get_client('iam')
     summary = iam.get_account_summary()['SummaryMap']
@@ -12,6 +12,7 @@ def ensure_hardware_mfa_is_enabled_for_the_root_account(account, rule_config):
     if 'AccountMFAEnabled' in summary and summary['AccountMFAEnabled'] == 1:
         for mfa_device in mfa_devices:
             if 'SerialNumber' in mfa_device:
-                result = True
-
-    return summary, result
+                result = Reconnoitre.COMPLIANT
+    rule.setData(summary)
+    rule.setResult(result)
+    return rule

@@ -3,11 +3,11 @@ import logging
 import time
 import pytz
 from datetime import datetime
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password(account, rule_config):
-    result = False
+def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
     data = None
 
     iam = libs.get_client('iam')
@@ -32,9 +32,11 @@ def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_ha
                 break
 
         if not data:
-            result = True
+            result = Reconnoitre.COMPLIANT
 
-        return data, result
+        rule.setData(data)
+        rule.setResult(result)
+        return rule
     else:
         time.sleep(3)
-        return do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password(account, rule_config)
+        return do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password(rule)

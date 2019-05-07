@@ -1,10 +1,10 @@
 import libs
 import logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created(account, rule_config):
-    result = False
+def ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
     data = list()
     iam = libs.get_client('iam')
     policies = iam.list_policies(Scope='Local')['Policies']
@@ -40,6 +40,7 @@ def ensure_iam_policies_that_allow_full_administrative_privileges_are_not_create
                             break
 
     if not data:
-        result = True
-
-    return data, result
+        result = Reconnoitre.COMPLIANT
+    rule.setData(data)
+    rule.setResult(result)
+    return rule

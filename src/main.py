@@ -44,6 +44,7 @@ from datetime import datetime
 from yaml import load, dump
 from json import dumps
 from libs import Database
+from compliance import Reconnoitre, BaseScan, CISScan, CustomScan
 
 
 def main(debug, test, output):
@@ -56,7 +57,6 @@ def main(debug, test, output):
     if debug:
         db.deldb()
     queue = []
-    rules = []
     for account in c['accounts']:
         id = account['id']
         log.info(f'Scanning AWS Account: {id}')
@@ -70,67 +70,66 @@ def main(debug, test, output):
             profile = account['profile']
 
         ignore_conf = libs.get_config('ignore', default={})
-        ignore_list = [] if 'rules' not in ignore_conf else ignore_conf['rules'].get(
+        ignore_rules_list = [] if 'rules' not in ignore_conf else ignore_conf['rules'].get(
             account['alias'], []) + ignore_conf['rules'].get(account['id'], [])
+        queue = []
+        if c['compliance'].get('custom_rules') and 'custom' in r:
+            queue += Reconnoitre.prepare_queue(r['custom'],
+                                                    account=account,
+                                                    ignore_list=ignore_rules_list,
+                                                    mode='custom')
+        if 'cis' in r:
+            queue += Reconnoitre.prepare_queue(r['cis'],
+                                                ignore_list=ignore_rules_list,
+                                                account=account,
+                                                mode='cis')
 
         if test:
-            for rule in r['cis']+r['custom']:
-                if rule['name'] in test.split(',') and rule['name'] not in ignore_list:
-                    rules.append(rule)
-        else:
-            if c['compliance'].get('custom_rules') and 'custom' in r:
-                rules += r['custom']
-            if 'cis' in r:
-                rules += [x for x in r['cis'] if x.get('level') <= c['compliance'].get('cis_level', 2)]
-
-        libs.configure_credentials(role, profile, id)
-        for rule in rules:
-            if not rule.get('regions'):
-                queue.append((account, rule, output))
-
-        for rule in rules:
-            if rule.get('regions'):
-                for region in rule.get('regions'):
-                    rule['region'] = region
-                    queue.append((account, rule, output))
+            for rule_name in test.split(','):
+                pass # pick test rules only
+    scans = []
     try:
+        libs.configure_credentials(role, profile, id)
         if debug:
             for item in queue:
-                libs.check_rule(item)
+                scans.append(Reconnoitre.check_rule(item))
         else:
             gc.collect()
             p = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-            p.map(libs.check_rule, queue)
+            scans = p.map(Reconnoitre.check_rule, queue)
             p.close()
             p.join()
     except Exception as e:
         log.exception(e)
 
-    db = Database()
-    if output == 'json':
-        report = []
-        for record in db.getall():
-            ignore = False
-            if ignore_list and 'findings' in ignore_list:
-                for finding in ignore_list['findings']:
-                    if finding['id'] == record['id']:
-                        ignore = True
-                        break
-            if not ignore:
-                report.append(record)
-        print(dumps(report, indent=2, sort_keys=True))
-    elif output == 'text':
-        result_agg = {
-            'NONCOMPLIANT': 0,
-            'COMPLIES': 0,
-        }
-        for record in db.getall():
-            result_agg[record['last_result']] += 1
-        total = result_agg['NONCOMPLIANT'] + result_agg['COMPLIES']
-        if result_agg['NONCOMPLIANT'] != 0:
-            log.error(f"Scanned {total} Rules with {result_agg['NONCOMPLIANT']} NONCOMPLIANT issues found")
-        else:
-            log.info(f"COMPLIANT ({total} Rules)")
+    for record in scans:
+        log.info('Test')
+        log.info(record)
+        exit(0)
+    # if output == 'json':
+    #     report = []
+    #     for record in db.getall():
+    #         ignore = False
+    #         if ignore_list and 'findings' in ignore_list:
+    #             for finding in ignore_list['findings']:
+    #                 if finding['id'] == record['id']:
+    #                     ignore = True
+    #                     break
+    #         if not ignore:
+    #             report.append(record)
+    #     print(dumps(report, indent=2, sort_keys=True))
+    # elif output == 'text':
+    #     result_agg = {
+    #         'NONCOMPLIANT': 0,
+    #         'COMPLIES': 0,
+    #     }
+    #     for record in db.getall():
+    #         result_agg[record['last_result']] += 1
+    #     total = result_agg['NONCOMPLIANT'] + result_agg['COMPLIES']
+    #     if result_agg['NONCOMPLIANT'] != 0:
+    #         log.error(f"Scanned {total} Rules with {result_agg['NONCOMPLIANT']} NONCOMPLIANT issues found")
+    #     else:
+    #         log.info(f"COMPLIANT ({total} Rules)")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='open net scans')

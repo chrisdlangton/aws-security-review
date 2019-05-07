@@ -1,9 +1,9 @@
 import libs, logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_cis
-def ensure_iam_policies_are_attached_only_to_groups_or_roles(account, rule_config):
-    result = False
+def ensure_iam_policies_are_attached_only_to_groups_or_roles(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     iam = libs.get_client('iam')
     users = [v['UserName'] for v in iam.list_users()['Users']]
@@ -17,6 +17,7 @@ def ensure_iam_policies_are_attached_only_to_groups_or_roles(account, rule_confi
                 data.append(d)
 
     if data.__len__ == 0:
-        result = True
-
-    return data, result
+        result = Reconnoitre.COMPLIANT
+    rule.setData(data)
+    rule.setResult(result)
+    return rule

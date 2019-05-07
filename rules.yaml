@@ -20,7 +20,8 @@ custom:
       - ap-southeast-2
 
   - name: iam_key_max_age_days
-    threshold: 30
+    attributes:
+      threshold: 30
     purpose: If you do have an access key for your AWS account, delete it. If you must keep it, rotate (change) the access key regularly
     control: Periodically check for key age and make stale keys inactive while removing unused keys or rotating them where they are still used
 

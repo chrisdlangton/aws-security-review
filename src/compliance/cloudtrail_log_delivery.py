@@ -1,13 +1,15 @@
 import libs, logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_custom
-def cloudtrail_log_delivery(account, rule_config):
-    result = False
+def cloudtrail_log_delivery(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
 
     cloudtrail = libs.get_client('cloudtrail')
     trail = cloudtrail.describe_trails(includeShadowTrails=False)['trailList']
     if 'CloudWatchLogsLogGroupArn' in trail:
-        result = True
+        result = Reconnoitre.COMPLIANT
 
-    return trail, result
+    rule.setData(trail)
+    rule.setResult(result)
+    return rule

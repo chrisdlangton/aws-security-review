@@ -1,19 +1,20 @@
 import libs
 import logging
+from compliance import Reconnoitre, BaseScan
 
 
-report = libs.report_custom
-def password_policy_on(account, rule_config):
-    result = False
+def password_policy_on(rule: BaseScan):
+    result = Reconnoitre.NON_COMPLIANT
     try:
         iam = libs.get_client('iam')
         data = iam.get_account_password_policy().get('PasswordPolicy')
         if data['AllowUsersToChangePassword'] == 'true':
-            result = True
+            result = Reconnoitre.COMPLIANT
     except Exception as e:
         if type(e).__name__ == 'NoSuchEntityException':
             data = None
         else:
             raise e
-
-    return data, result
+    rule.setData(data)
+    rule.setResult(result)
+    return rule
