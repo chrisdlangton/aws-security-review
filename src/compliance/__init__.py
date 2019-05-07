@@ -1,7 +1,114 @@
 import logging
 import libs
 import importlib
-from typing import Tuple
+import json
+from datetime import datetime
+
+class Finding:
+    def __init__(
+            self,
+            id_str: str,
+            generator_id: str,
+            region: str,
+            title: str,
+            description: str,
+            compliance_status: str,
+            namespace: str,
+            category: str,  # https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-findings-format.html#securityhub-findings-format-type-taxonomy
+            classifier: str,
+            recommendation_text: str,
+            resource_type: str,
+            resource_data: dict,
+            recommendation_url: str = None,
+            source_url: str = None,
+            confidence: int = 100,
+            criticality: int = 50,
+            severity_normalized: int = 0):
+        if compliance_status.upper() not in [
+                'PASSED', 'WARNING', 'FAILED', 'NOT_AVAILABLE'
+        ]:
+            raise AssertionError(f'bad compliance_status {compliance_status}')
+        if not 0 <= confidence <= 100:
+            raise AssertionError(
+                f'provided confidence {confidence} must be between 0-100')
+        if not 0 <= criticality <= 100:
+            raise AssertionError(
+                f'provided criticality {criticality} must be between 0-100')
+        if resource_type not in [
+                'AwsEc2Instance', 'AwsS3Bucket', 'Container',
+                'AwsIamAccessKey', 'AwsIamUser', 'AwsAccount', 'AwsIamPolicy',
+                'AwsCloudTrailTrail', 'AwsKmsKey', 'AwsEc2Vpc',
+                'AwsEc2SecurityGroup', 'Other'
+        ]:
+            raise AssertionError(f'bad resource_type {compliance_status}')
+        if namespace not in [
+                'Software and Configuration Checks', 'TTPs', 'Effects',
+                'Unusual Behaviors', 'Sensitive Data Identifications'
+        ]:
+            raise AssertionError(f'bad namespace {namespace}')
+        self.compliance_status = compliance_status
+        self.confidence = confidence
+        self.created_at = libs.to_iso8601(datetime.now())
+        self.criticality = criticality
+        self.description = description
+        self.generator_id = generator_id
+        self.id = id_str
+        self.region = region
+        self.product_arn = f'arn:aws:securityhub:{self.region}:{self.account_id}:product/{self.account_id}/default'
+        self.recommendation_text = recommendation_text
+        self.recommendation_url = recommendation_url
+        self.schema_version = '2018-10-08'
+        self.severity_normalized = severity_normalized
+        self.source_url = source_url
+        self.title = title
+        self.type = f'{namespace}/{category}/{classifier}'
+        self.resource_type = resource_type
+        self.resource_data = resource_data
+
+    def __dict__(self):
+        finding = {
+            'AwsAccountId': self.account_id,
+            'Compliance': {
+                'Status': self.compliance_status
+            },
+            'Confidence': self.confidence,
+            'CreatedAt': self.created_at,
+            'Criticality': self.criticality,
+            'Description': self.description,
+            'GeneratorId': self.generator_id,
+            'Id': self.id,
+            'ProductArn': self.product_arn,
+            'Remediation': {
+                'Recommendation': {
+                    'Text': recommendation_text,
+                    'Url': recommendation_url
+                }
+            },
+            'SchemaVersion': self.schema_version,
+            'Severity': {
+                'Normalized': severity_normalized
+            },
+            'Title': self.title,
+            'Types': [self.type],
+            'UpdatedAt': self.created_at
+        }
+        if self.source_url:
+            finding['SourceUrl'] = self.source_url
+# 'ProductFields': {
+# 'string': 'string'
+# },
+# 'Resources': [{
+# 'Details': {
+#     resource_type: {}
+# },
+# }],
+        return finding
+
+    def __str__(self):
+        return json.dumps(self.__dict__, indent=2)
+
+    def __repr__(self):
+        return self.__str__
 
 
 class BaseScan:
@@ -35,8 +142,8 @@ class BaseScan:
             raise AssertionError(f'bad result: {result}')
         self.result = result
 
-    def addFinding(self, data: dict):
-        pass
+    def addFinding(self, finding: Finding):
+        self.findings.append(finding)
 
     def format_text(self) -> str:
         pass
