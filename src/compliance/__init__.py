@@ -72,6 +72,17 @@ class Finding:
         self.type = finding_type
         self.type_id = finding_type_id
 
+    def toString(self):
+        return f"""                                 {self.generator_id}
+        Rule:           {self.title}
+        Description:    {self.description}
+        Status:         {self.compliance_status}
+        Account:        {self.account_id} [{self.region}]
+        Criticality: {self.criticality}
+        Confidence: {self.confidence}
+        Severity Normalised: {self.severity_normalized}
+        """
+
     def toDict(self):
         finding = {
             'ProductFields': {
@@ -248,6 +259,15 @@ class Reconnoitre:
         }
         for record in scans:
             result_agg[record.result] += 1
+            for finding in record.findings:
+                finding_str = finding.toString()
+                if finding.compliance_status == Finding.STATUS_FAILED:
+                    log.error(finding_str)
+                if finding.compliance_status == Finding.STATUS_WARNING:
+                    log.warn(finding_str)
+                if finding.compliance_status in [Finding.STATUS_NOT_AVAILABLE, Finding.STATUS_PASSED]:
+                    log.info(finding_str)
+
         total = result_agg[Reconnoitre.NON_COMPLIANT] + result_agg[
             Reconnoitre.COMPLIANT]
         if result_agg[Reconnoitre.NON_COMPLIANT] != 0:
