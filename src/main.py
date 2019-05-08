@@ -103,36 +103,14 @@ def main(debug, test, output):
         log.exception(e)
 
     if output == 'securityhub':
-        securityhub = libs.get_client('securityhub')
-        findings = []
         for record in scans:
-            for finding in record.findings:
-                findings.append(finding.toDict())
-        print(securityhub.batch_import_findings(Findings=findings))
-    # if output == 'json':
-    #     report = []
-    #     for record in db.getall():
-    #         ignore = False
-    #         if ignore_list and 'findings' in ignore_list:
-    #             for finding in ignore_list['findings']:
-    #                 if finding['id'] == record['id']:
-    #                     ignore = True
-    #                     break
-    #         if not ignore:
-    #             report.append(record)
-    #     print(dumps(report, indent=2, sort_keys=True))
-    # elif output == 'text':
-    #     result_agg = {
-    #         'NONCOMPLIANT': 0,
-    #         'COMPLIES': 0,
-    #     }
-    #     for record in db.getall():
-    #         result_agg[record['last_result']] += 1
-    #     total = result_agg['NONCOMPLIANT'] + result_agg['COMPLIES']
-    #     if result_agg['NONCOMPLIANT'] != 0:
-    #         log.error(f"Scanned {total} Rules with {result_agg['NONCOMPLIANT']} NONCOMPLIANT issues found")
-    #     else:
-    #         log.info(f"COMPLIANT ({total} Rules)")
+            record.format_security_hub()
+    elif output == 'json':
+        for record in scans:
+            record.format_json(indent=2)
+    elif output == 'text':
+        Reconnoitre.format_text(scans)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='open net scans')

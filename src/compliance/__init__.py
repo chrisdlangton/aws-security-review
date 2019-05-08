@@ -160,21 +160,32 @@ class BaseScan:
     def addFinding(self, finding: Finding):
         self.findings.append(finding)
 
-    def format_text(self) -> str:
-        pass
-
     def format_cvrf(self) -> dict:
         pass
 
     def format_stix(self) -> dict:
         pass
 
-    def format_json(self) -> dict:
-        pass
+    def format_json(self, indent=None) -> list:
+        findings = []
+        for finding in self.findings:
+            findings.append(finding.toDict())
+        if indent:
+            print(json.dumps(findings, indent=indent, sort_keys=True))
+        else:
+            print(json.dumps(findings, sort_keys=True))
+        return findings
 
-    def format_aws_security_hub(self) -> dict:
-        pass
-
+    def format_securityhub(self) -> list:
+        log = logging.getLogger()
+        securityhub = libs.get_client('securityhub')
+        findings = []
+        for finding in self.findings:
+            findings.append(finding.toDict())
+        response = securityhub.batch_import_findings(Findings=findings)
+        log.info(f'AWS Security Hub findings {response["SuccessCount"]} sent and {response["FailedCount"]} failed')
+        log.debug(f'AWS Security Hub failed findings {response["FailedFindings"]}')
+        return findings
 
 class CustomScan(BaseScan):
     def __init__(self, account: dict, rule_config: dict):
@@ -227,6 +238,24 @@ class Reconnoitre:
             else:
                 queue.append(rule)
         return queue
+
+    @staticmethod
+    def format_text(scans: list) -> None:
+        log = logging.getLogger()
+        result_agg = {
+            Reconnoitre.NON_COMPLIANT: 0,
+            Reconnoitre.COMPLIANT: 0,
+        }
+        for record in scans:
+            result_agg[record.result] += 1
+        total = result_agg[Reconnoitre.NON_COMPLIANT] + result_agg[
+            Reconnoitre.COMPLIANT]
+        if result_agg[Reconnoitre.NON_COMPLIANT] != 0:
+            log.error(
+                f"Scanned {total} Rules with {result_agg[Reconnoitre.NON_COMPLIANT]} {Reconnoitre.NON_COMPLIANT} issues found"
+            )
+        else:
+            log.info(f"{Reconnoitre.COMPLIANT} ({total} Rules)")
 
     @staticmethod
     def check_rule(rule: BaseScan):
