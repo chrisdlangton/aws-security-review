@@ -66,6 +66,7 @@ Resources:
               - config:Describe*
               - ec2:Describe*
               - vpc:Describe*
+              - securityhub:BatchImportFindings
 Outputs:
   AccessKey:
     Value:
@@ -93,6 +94,16 @@ Configure your own `config.yaml` based on the example then run the main project 
 
 ```bash
 python src/main.py
+```
+
+Check out the cli arguments by adding `--help`
+
+## AWS Security Hub
+
+Send findings to the SecurityHub of the account being scanned using;
+
+```bash
+python src/main.py -o securityhub
 ```
 
 Check out the cli arguments by adding `--help`

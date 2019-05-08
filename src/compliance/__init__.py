@@ -2,11 +2,18 @@ import logging
 import libs
 import importlib
 import json
+import pytz
 from datetime import datetime
 
 class Finding:
+    STATUS_PASSED = 'PASSED'
+    STATUS_WARNING = 'WARNING'
+    STATUS_FAILED = 'FAILED'
+    STATUS_NOT_AVAILABLE = 'NOT_AVAILABLE'
+
     def __init__(
             self,
+            account_id: int,
             id_str: str,
             generator_id: str,
             region: str,
@@ -17,6 +24,8 @@ class Finding:
             category: str,  # https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-findings-format.html#securityhub-findings-format-type-taxonomy
             classifier: str,
             recommendation_text: str,
+            finding_type: str,
+            finding_type_id: str,
             resource_type: str,
             resource_data: dict,
             recommendation_url: str = None,
@@ -34,24 +43,20 @@ class Finding:
         if not 0 <= criticality <= 100:
             raise AssertionError(
                 f'provided criticality {criticality} must be between 0-100')
-        if resource_type not in [
-                'AwsEc2Instance', 'AwsS3Bucket', 'Container',
-                'AwsIamAccessKey', 'AwsIamUser', 'AwsAccount', 'AwsIamPolicy',
-                'AwsCloudTrailTrail', 'AwsKmsKey', 'AwsEc2Vpc',
-                'AwsEc2SecurityGroup', 'Other'
-        ]:
-            raise AssertionError(f'bad resource_type {compliance_status}')
         if namespace not in [
                 'Software and Configuration Checks', 'TTPs', 'Effects',
                 'Unusual Behaviors', 'Sensitive Data Identifications'
         ]:
             raise AssertionError(f'bad namespace {namespace}')
+        if not region:
+            region = 'ap-southeast-2'
         self.compliance_status = compliance_status
         self.confidence = confidence
-        self.created_at = libs.to_iso8601(datetime.now())
+        self.created_at = datetime.utcnow().replace(tzinfo=pytz.UTC).isoformat()
         self.criticality = criticality
         self.description = description
         self.generator_id = generator_id
+        self.account_id = account_id
         self.id = id_str
         self.region = region
         self.product_arn = f'arn:aws:securityhub:{self.region}:{self.account_id}:product/{self.account_id}/default'
@@ -64,9 +69,15 @@ class Finding:
         self.type = f'{namespace}/{category}/{classifier}'
         self.resource_type = resource_type
         self.resource_data = resource_data
+        self.type = finding_type
+        self.type_id = finding_type_id
 
-    def __dict__(self):
+    def toDict(self):
         finding = {
+            'ProductFields': {
+                'ProviderName': 'Reconnoitre',
+                'ProviderVersion': '0.0.1'
+            },
             'AwsAccountId': self.account_id,
             'Compliance': {
                 'Status': self.compliance_status
@@ -79,36 +90,40 @@ class Finding:
             'Id': self.id,
             'ProductArn': self.product_arn,
             'Remediation': {
-                'Recommendation': {
-                    'Text': recommendation_text,
-                    'Url': recommendation_url
-                }
+                'Recommendation': {}
             },
             'SchemaVersion': self.schema_version,
             'Severity': {
-                'Normalized': severity_normalized
+                'Normalized': self.severity_normalized
             },
             'Title': self.title,
             'Types': [self.type],
-            'UpdatedAt': self.created_at
+            'UpdatedAt': self.created_at,
+            'Resources': []
         }
+        if self.recommendation_text:
+            finding['Remediation']['Recommendation']['Text'] = self.recommendation_text
+        if self.recommendation_url:
+            finding['Remediation']['Recommendation']['Url'] = self.recommendation_url
         if self.source_url:
             finding['SourceUrl'] = self.source_url
-# 'ProductFields': {
-# 'string': 'string'
-# },
-# 'Resources': [{
-# 'Details': {
-#     resource_type: {}
-# },
-# }],
+        resource = {
+            'Type': self.type,
+            'Id': self.type_id,
+            'Details': {
+                self.resource_type: self.resource_data
+            }
+        }
+        if self.region:
+            resource['Region'] = self.region
+        finding['Resources'].append(resource)
+        # 'ProductFields': {
+        # 'string': 'string'
+        # },
         return finding
 
-    def __str__(self):
-        return json.dumps(self.__dict__, indent=2)
-
     def __repr__(self):
-        return self.__str__
+        return json.dumps(self.toDict(), indent=2)
 
 
 class BaseScan:
@@ -195,7 +210,7 @@ class Reconnoitre:
         queue = []
         # pick configured cis level rules only
         if mode == 'cis':
-            rules += [
+            rules = [
                 x for x in rules
                 if x.get('level') <= c['compliance'].get('cis_level', 2)
             ]
@@ -203,7 +218,7 @@ class Reconnoitre:
         for r in rules:
             if mode == 'custom':
                 rule = CustomScan(account, r)
-            if mode == 'cis':
+            elif mode == 'cis':
                 rule = CISScan(account, r)
             if r.get('regions'):
                 for region in r.get('regions'):

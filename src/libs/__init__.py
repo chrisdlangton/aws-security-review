@@ -13,7 +13,7 @@ import importlib
 import yaml
 from os import path, getcwd
 from datetime import datetime
-from xxhash import xxh32_hexdigest
+from xxhash import xxh64_hexdigest
 from typing import Tuple
 
 credentials = None
@@ -69,7 +69,7 @@ class Database:
 def get_config(key: str = None, config_file: str = None, default=None) -> dict:
     global config
     if not key:
-        key = xxh32_hexdigest(bytes(config_file))
+        key = xxh64_hexdigest(bytes(config_file), seed=20141025)
     if key in config:
         return config[key] or default
     if not config_file:
@@ -207,7 +207,7 @@ def is_json(myjson: str) -> bool:
 #             'data': data,
 #             'rule': rule_config
 #         }
-#         id = xxh32_hexdigest(record_key)
+#         id = xxh64_hexdigest(record_key)
 #         result_obj = {
 #             'id': id,
 #             'key': record_key,

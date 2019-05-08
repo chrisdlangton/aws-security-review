@@ -74,12 +74,12 @@ def main(debug, test, output):
             account['alias'], []) + ignore_conf['rules'].get(account['id'], [])
         queue = []
         if c['compliance'].get('custom_rules') and 'custom' in r:
-            queue += Reconnoitre.prepare_queue(r['custom'],
+            queue += Reconnoitre.prepare_queue(r.get('custom', []),
                                                     account=account,
                                                     ignore_list=ignore_rules_list,
                                                     mode='custom')
         if 'cis' in r:
-            queue += Reconnoitre.prepare_queue(r['cis'],
+            queue += Reconnoitre.prepare_queue(r.get('cis', []),
                                                 ignore_list=ignore_rules_list,
                                                 account=account,
                                                 mode='cis')
@@ -102,10 +102,13 @@ def main(debug, test, output):
     except Exception as e:
         log.exception(e)
 
-    for record in scans:
-        log.info('Test')
-        log.info(record)
-        exit(0)
+    if output == 'securityhub':
+        securityhub = libs.get_client('securityhub')
+        findings = []
+        for record in scans:
+            for finding in record.findings:
+                findings.append(finding.toDict())
+        print(securityhub.batch_import_findings(Findings=findings))
     # if output == 'json':
     #     report = []
     #     for record in db.getall():
