@@ -6,7 +6,6 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from compliance import Reconnoitre, BaseScan, Finding
-from xxhash import xxh64_hexdigest
 
 
 def avoid_the_use_of_the_root_account(rule: BaseScan):
@@ -22,14 +21,9 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
             if report['user'] != '<root_account>':
                 continue
 
-            dts = datetime.utcnow()
-            epochtime = round(time.mktime(dts.timetuple()) + dts.microsecond/1e6)
-            finding_id = xxh64_hexdigest(f'{rule.name}{epochtime}', seed=20141025)
-            finding_name = f"reconnoitre-{rule.__class__.__name__.lower().replace('scan', '')}-{finding_id}"
             finding_base = {
                 'account_id': str(rule.account_id),
-                'id_str': finding_id,
-                'generator_id': finding_name,
+                'name': f"{rule.__class__.__name__.lower().replace('scan', '')}",
                 'region': rule.region,
                 'title': rule.name.replace('_', ' '),
                 'description': rule.purpose,
@@ -103,6 +97,11 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
                     finding['compliance_status'] = Finding.STATUS_FAILED
                     rule.setResult(Reconnoitre.NON_COMPLIANT)
                     rule.addFinding(Finding(**finding))
+
+            if len(rule.findings) == 0:
+                finding = deepcopy(finding_base)
+                finding['compliance_status'] = Finding.STATUS_PASSED
+                rule.addFinding(Finding(**finding))
             break
 
         if not rule.result:

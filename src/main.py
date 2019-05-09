@@ -104,7 +104,7 @@ def main(debug, test, output):
 
     if output == 'securityhub':
         for record in scans:
-            record.format_security_hub()
+            record.format_securityhub()
     elif output == 'json':
         for record in scans:
             record.format_json(indent=2)

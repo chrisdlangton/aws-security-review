@@ -11,6 +11,7 @@ import colorlog
 import pickledb
 import importlib
 import yaml
+import time
 from os import path, getcwd
 from datetime import datetime
 from xxhash import xxh64_hexdigest
@@ -180,82 +181,12 @@ def is_json(myjson: str) -> bool:
     return True
 
 
-
-# def check_rule(inputs: Tuple[dict, dict]) -> bool:
-#     try:
-#         account, rule_config, output = inputs
-#         log = logging.getLogger()
-#         rule_name = f"compliance.{rule_config['name']}"
-#         rule_obj = importlib.import_module(rule_name)
-#         rule_fn = getattr(rule_obj, rule_config['name'])
-#         log.debug(f"Checking rule {rule_config['name']} in account {account['alias']} [{account['id']}]")
-#         data, result = rule_fn(account, rule_config)
-
-
-
-#         record = format_aws_security_hub(data, result, account, rule_config)
-
-
-#         db = Database()
-#         now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-#         record_key = f"{prefix or ''}{rule_config['name']}-{account['id']}"
-#         if rule_config.get('region'):
-#             record_key += f"-{rule_config['region']}"
-#         finding_result = {
-#             'time': now.isoformat(),
-#             'compliance': result,
-#             'data': data,
-#             'rule': rule_config
-#         }
-#         id = xxh64_hexdigest(record_key)
-#         result_obj = {
-#             'id': id,
-#             'key': record_key,
-#             'rule_name': rule_config['name'],
-#             'last_result': 'COMPLIES' if result else 'NONCOMPLIANT',
-#             'alias': account['alias'],
-#             'account': account['id'],
-#             'findings':  [finding_result]
-#         }
-#         ignore_conf = get_config('ignore', default={})
-#         ignore_list = [] if 'findings' not in ignore_conf else ignore_conf['findings'].get(
-#             account['alias'], []) + ignore_conf['findings'].get(account['id'], [])
-
-#         for finding in ignore_list:
-#             if finding['id'] == id and  datetime.strptime(finding['ignore_until'], '%Y-%m-%d') >= datetime.now():
-#                 return dict()
-
-#         if db.exists(record_key):
-#             record = db.get(record_key)
-#             db.rem(record_key)
-#             record['last_result'] = result_obj['last_result']
-#             record['findings'].append(finding_result)
-#             db.set(record_key, record)
-#             result_obj = record
-#         else:
-#             db.set(record_key, result_obj)
-#         db.dump()
-#         return result_obj
-
-
-
-
-
-
-
-#         if record and output == 'text':
-#             report = getattr(rule_obj, 'report')
-#             text = report(record)
-#             if record['last_result'] == 'NONCOMPLIANT':
-#                 log.warn(text)
-#             else:
-#                 log.info(text)
-#     except Exception as e:
-#         log.exception(e)
-#         log.warn(f"Failed on rule {rule_config['name']} in account {account['alias']} [{account['id']}]")
-#         return False
-
-#     return True
+def to_epochtime(when=None, tz=pytz.UTC):
+    if not when:
+        when = datetime.utcnow().replace(tzinfo=tz)
+    if not when.tzinfo:
+        when = tz.localize(when)
+    return round(time.mktime(when.timetuple()) + when.microsecond / 1e6)
 
 
 def to_iso8601(when=None, tz=pytz.timezone('UTC')):
@@ -265,6 +196,14 @@ def to_iso8601(when=None, tz=pytz.timezone('UTC')):
         when = tz.localize(when)
     _when = when.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
     return _when[:-8] + _when[-5:]  # remove microseconds
+
+
+def aws_iso8601(when=None, tz=pytz.UTC):
+    if not when:
+        when = datetime.utcnow().replace(tzinfo=tz)
+    if not when.tzinfo:
+        when = tz.localize(when)
+    return when.isoformat()
 
 
 def from_iso8601(when=None, tz=pytz.timezone('UTC')):

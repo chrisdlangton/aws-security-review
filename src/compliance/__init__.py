@@ -4,6 +4,8 @@ import importlib
 import json
 import pytz
 from datetime import datetime
+from xxhash import xxh64_hexdigest
+
 
 class Finding:
     STATUS_PASSED = 'PASSED'
@@ -14,12 +16,11 @@ class Finding:
     def __init__(
             self,
             account_id: int,
-            id_str: str,
-            generator_id: str,
             region: str,
             title: str,
             description: str,
             compliance_status: str,
+            name: str,
             namespace: str,
             category: str,  # https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-findings-format.html#securityhub-findings-format-type-taxonomy
             classifier: str,
@@ -52,12 +53,10 @@ class Finding:
             region = 'ap-southeast-2'
         self.compliance_status = compliance_status
         self.confidence = confidence
-        self.created_at = datetime.utcnow().replace(tzinfo=pytz.UTC).isoformat()
+        self.created_at = libs.aws_iso8601()
         self.criticality = criticality
         self.description = description
-        self.generator_id = generator_id
         self.account_id = account_id
-        self.id = id_str
         self.region = region
         self.product_arn = f'arn:aws:securityhub:{self.region}:{self.account_id}:product/{self.account_id}/default'
         self.recommendation_text = recommendation_text
@@ -65,6 +64,7 @@ class Finding:
         self.schema_version = '2018-10-08'
         self.severity_normalized = severity_normalized
         self.source_url = source_url
+        self.name = name
         self.title = title
         self.type = f'{namespace}/{category}/{classifier}'
         self.resource_type = resource_type
@@ -73,21 +73,22 @@ class Finding:
         self.type_id = finding_type_id
 
     def toString(self):
-        return f"""                                 {self.generator_id}
-        Rule:           {self.title}
-        Description:    {self.description}
-        Status:         {self.compliance_status}
-        Account:        {self.account_id} [{self.region}]
-        Criticality: {self.criticality}
-        Confidence: {self.confidence}
-        Severity Normalised: {self.severity_normalized}
+        return f"""                                 {self._make_generator_id()}
+        Rule:                   {self.title}
+        Description:            {self.description}
+        Status:                 {self.compliance_status}
+        Account:                {self.account_id} [{self.region}]
+        Criticality:            {self.criticality}
+        Confidence:             {self.confidence}
+        Severity Normalised:    {self.severity_normalized}
         """
 
     def toDict(self):
         finding = {
             'ProductFields': {
-                'ProviderName': 'Reconnoitre',
-                'ProviderVersion': '0.0.1'
+                'Service_Name': 'Reconnoitre',
+                'd2vi/reconnoitre/company': 'd2Vi',
+                'd2vi/reconnoitre/version': '0.0.1'
             },
             'AwsAccountId': self.account_id,
             'Compliance': {
@@ -97,8 +98,8 @@ class Finding:
             'CreatedAt': self.created_at,
             'Criticality': self.criticality,
             'Description': self.description,
-            'GeneratorId': self.generator_id,
-            'Id': self.id,
+            'GeneratorId': self._make_generator_id(),
+            'Id': self._make_id(),
             'ProductArn': self.product_arn,
             'Remediation': {
                 'Recommendation': {}
@@ -107,7 +108,7 @@ class Finding:
             'Severity': {
                 'Normalized': self.severity_normalized
             },
-            'Title': self.title,
+            'Title': f'[Reconnoitre] {self.title}',
             'Types': [self.type],
             'UpdatedAt': self.created_at,
             'Resources': []
@@ -128,13 +129,17 @@ class Finding:
         if self.region:
             resource['Region'] = self.region
         finding['Resources'].append(resource)
-        # 'ProductFields': {
-        # 'string': 'string'
-        # },
+
         return finding
 
     def __repr__(self):
         return json.dumps(self.toDict(), indent=2)
+
+    def _make_generator_id(self):
+        return f'reconnoitre-{self.name}-{Reconnoitre.make_finding_id(self.title)}'
+
+    def _make_id(self):
+        return f'{self.region}/{self.account_id}/{Reconnoitre.make_finding_id(self.title)}'
 
 
 class BaseScan:
@@ -225,6 +230,10 @@ class Reconnoitre:
     NOT_APPLICABLE = 'NOT_APPLICABLE'
     NON_COMPLIANT = 'NON_COMPLIANT'
     COMPLIANT = 'COMPLIANT'
+
+    @staticmethod
+    def make_finding_id(input_str: str):
+        return xxh64_hexdigest(f"{input_str}", seed=20141025)
 
     @staticmethod
     def prepare_queue(rules: list, account: list, ignore_list: list, mode: str) -> list:
