@@ -1,16 +1,16 @@
 ---
-# custom:
-#   - name: cloudtrail_log_delivery
-#     purpose: Determine whether any of the trails are delivering logs to CloudWatch Logs
-#     control: tba
-#     regions:
-#       - ap-southeast-2
+custom:
+  - name: cloudtrail_log_delivery
+    purpose: Determine whether any of the trails are delivering logs to CloudWatch Logs
+    control: tba
+    regions:
+      - ap-southeast-2
 
-#   - name: config_recording
-#     purpose: Determine whether there is at least one Config recorder recording
-#     control: tba
-#     regions:
-#       - ap-southeast-2
+  - name: config_recording
+    purpose: Determine whether there is at least one Config recorder recording
+    control: tba
+    regions:
+      - ap-southeast-2
 
 # # CIS 4.3	Ensure VPC flow logging is enabled in all VPCs
 #   - name: enabled_vpc_flow_logs

@@ -187,13 +187,13 @@ class BaseScan:
         for finding in self.findings:
             findings.append(finding.toDict())
         if indent:
-            print(json.dumps(findings, indent=indent, sort_keys=True))
+            print(json.dumps(findings, indent=indent, sort_keys=True, default=libs.date_converter))
         else:
-            print(json.dumps(findings, sort_keys=True))
+            print(json.dumps(findings, sort_keys=True, default=libs.date_converter))
         return findings
 
     @staticmethod
-    def securityhub_findings(archived=False) -> list:
+    def securityhub_findings(archived:bool = False, findings: list = []) -> list:
         securityhub = libs.get_client('securityhub')
         filters = {
             'ProductFields': [{
@@ -207,8 +207,13 @@ class BaseScan:
                 'Value': 'ACTIVE',
                 'Comparison': 'EQUALS'
             }]
-        return securityhub.get_findings(Filters=filters)['Findings']
-
+        response = securityhub.get_findings(Filters=filters)
+        while response:
+            findings += response['Findings']
+            response = securityhub.get_findings(
+                Filters=filters, NextToken=response['NextToken']
+            ) if 'NextToken' in response else None
+        return findings
 
     def format_securityhub(self) -> list:
         log = logging.getLogger()
@@ -223,11 +228,12 @@ class BaseScan:
             awssh_finding = finding.toDict()
             if finding._make_id() in active_findings:
                 compliance_status, workflow_state = active_findings[finding._make_id()]
-                if finding.compliance_status == Finding.STATUS_PASSED:
-                    awssh_finding['RecordState'] = 'ARCHIVED'
-                    awssh_finding['State'] = 'RESOLVED'
-                elif workflow_state != 'IN_PROGRESS' and compliance_status != finding.compliance_status:
-                    awssh_finding['Workflow'] = 'IN_PROGRESS'
+                if compliance_status != finding.compliance_status:
+                    if finding.compliance_status == Finding.STATUS_PASSED:
+                        awssh_finding['RecordState'] = 'ARCHIVED'
+                        awssh_finding['Workflow'] = 'RESOLVED'
+                    elif workflow_state != 'IN_PROGRESS':
+                        awssh_finding['Workflow'] = 'IN_PROGRESS'
 
             findings.append(awssh_finding)
         response = securityhub.batch_import_findings(Findings=findings)
@@ -265,8 +271,22 @@ class Reconnoitre:
     COMPLIANT = 'COMPLIANT'
 
     @staticmethod
-    def make_finding_id(input_str: str):
+    def make_finding_id(input_str: str) -> str:
         return xxh64_hexdigest(f"{input_str}", seed=20141025)
+
+    @staticmethod
+    def fix_custom_data(data: dict) -> dict:
+        ret = {}
+        for k, v in data.items():
+            if isinstance(v, int) or isinstance(v, bool):
+                ret[k] = str(v)
+            elif isinstance(v, datetime):
+                ret[k] = libs.to_iso8601(v)
+            elif isinstance(v, dict):
+                ret[k] = Reconnoitre.fix_custom_data(v)
+            else:
+                ret[k] = v
+        return ret
 
     @staticmethod
     def prepare_queue(rules: list, account: list, ignore_list: list, mode: str) -> list:

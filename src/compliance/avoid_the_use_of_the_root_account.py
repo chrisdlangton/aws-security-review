@@ -2,7 +2,6 @@ import libs
 import time
 import pytz
 import logging
-import json
 from copy import deepcopy
 from datetime import datetime
 from compliance import Reconnoitre, BaseScan, Finding
@@ -36,7 +35,7 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
                 'finding_type': 'AwsIamUser',
                 'finding_type_id': 'root',
                 'resource_type': 'Other',
-                'resource_data': report,
+                'resource_data': Reconnoitre.fix_custom_data(report),
                 # source_url: str = None,
                 'confidence': 100,
                 'criticality': 99,
@@ -46,7 +45,7 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
             delta = now - password_last_used
             if delta.days <= rule.settings.get('password_used'):
                 finding = deepcopy(finding_base)
-                finding['finding_type_id'] = 'root-password-used'
+                finding['finding_type_id'] = 'root-password-usage'
                 finding['severity_normalized'] = 90
                 finding['compliance_status'] = Finding.STATUS_FAILED
                 rule.setResult(Reconnoitre.NON_COMPLIANT)
@@ -57,7 +56,7 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
                 delta = now - access_key_1_last_used_date
                 if delta.days <= rule.settings.get('access_key_used'):
                     finding = deepcopy(finding_base)
-                    finding['finding_type_id'] = 'root-accesskey-used'
+                    finding['finding_type_id'] = 'root-accesskey-usage'
                     finding['severity_normalized'] = 99
                     finding['compliance_status'] = Finding.STATUS_FAILED
                     rule.setResult(Reconnoitre.NON_COMPLIANT)
@@ -69,7 +68,7 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
                 delta = now - access_key_2_last_used_date
                 if delta.days <= rule.settings.get('access_key_used'):
                     finding = deepcopy(finding_base)
-                    finding['finding_type_id'] = 'root-accesskey-used'
+                    finding['finding_type_id'] = 'root-accesskey-usage'
                     finding['severity_normalized'] = 99
                     finding['compliance_status'] = Finding.STATUS_FAILED
                     rule.setResult(Reconnoitre.NON_COMPLIANT)
