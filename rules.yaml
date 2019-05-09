@@ -29,7 +29,6 @@
 #     purpose: Configure a Strong Password Policy for Your Users. If you allow users to change their own passwords, require that they create strong passwords and that they rotate their passwords periodically
 #     control: Apply the Password Policy for your IAM Users and allow users to change their own password
 
-
 cis:
   - name: avoid_the_use_of_the_root_account
     version: 1.2.0

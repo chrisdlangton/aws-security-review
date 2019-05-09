@@ -67,6 +67,7 @@ Resources:
               - ec2:Describe*
               - vpc:Describe*
               - securityhub:BatchImportFindings
+              - securityhub:GetFindings
 Outputs:
   AccessKey:
     Value:

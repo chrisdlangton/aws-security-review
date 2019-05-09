@@ -192,16 +192,49 @@ class BaseScan:
             print(json.dumps(findings, sort_keys=True))
         return findings
 
+    @staticmethod
+    def securityhub_findings(archived=False) -> list:
+        securityhub = libs.get_client('securityhub')
+        filters = {
+            'ProductFields': [{
+                'Key': 'Service_Name',
+                'Value': 'Reconnoitre',
+                'Comparison': 'CONTAINS'
+            }]
+        }
+        if not archived:
+            filters['RecordState'] = [{
+                'Value': 'ACTIVE',
+                'Comparison': 'EQUALS'
+            }]
+        return securityhub.get_findings(Filters=filters)['Findings']
+
+
     def format_securityhub(self) -> list:
         log = logging.getLogger()
         securityhub = libs.get_client('securityhub')
+        sechub_resp = self.securityhub_findings()
+        active_findings = {
+            item['Id']: (item['Compliance']['Status'], item['WorkflowState'])
+            for item in sechub_resp
+        }
         findings = []
         for finding in self.findings:
-            findings.append(finding.toDict())
+            awssh_finding = finding.toDict()
+            if finding._make_id() in active_findings:
+                compliance_status, workflow_state = active_findings[finding._make_id()]
+                if finding.compliance_status == Finding.STATUS_PASSED:
+                    awssh_finding['RecordState'] = 'ARCHIVED'
+                    awssh_finding['State'] = 'RESOLVED'
+                elif workflow_state != 'IN_PROGRESS' and compliance_status != finding.compliance_status:
+                    awssh_finding['Workflow'] = 'IN_PROGRESS'
+
+            findings.append(awssh_finding)
         response = securityhub.batch_import_findings(Findings=findings)
         log.info(f'AWS Security Hub findings {response["SuccessCount"]} sent and {response["FailedCount"]} failed')
         log.debug(f'AWS Security Hub failed findings {response["FailedFindings"]}')
         return findings
+
 
 class CustomScan(BaseScan):
     def __init__(self, account: dict, rule_config: dict):
