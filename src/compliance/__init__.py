@@ -28,7 +28,7 @@ class Finding:
             finding_type: str,
             finding_type_id: str,
             resource_type: str,
-            resource_data: dict,
+            resource_data: dict = {},
             recommendation_url: str = None,
             source_url: str = None,
             confidence: int = 100,
@@ -97,9 +97,9 @@ class Finding:
             'Confidence': self.confidence,
             'CreatedAt': self.created_at,
             'Criticality': self.criticality,
-            'Description': self.description,
-            'GeneratorId': self._make_generator_id(),
-            'Id': self._make_id(),
+            'Description': self.description[:1024],
+            'GeneratorId': self._make_generator_id()[:512],
+            'Id': self._make_id()[:512],
             'ProductArn': self.product_arn,
             'Remediation': {
                 'Recommendation': {}
@@ -108,13 +108,13 @@ class Finding:
             'Severity': {
                 'Normalized': self.severity_normalized
             },
-            'Title': f'[Reconnoitre] {self.title}',
+            'Title': f'[Reconnoitre] {self.title}'[:256],
             'Types': [self.type],
             'UpdatedAt': self.created_at,
             'Resources': []
         }
         if self.recommendation_text:
-            finding['Remediation']['Recommendation']['Text'] = self.recommendation_text
+            finding['Remediation']['Recommendation']['Text'] = self.recommendation_text[:512]
         if self.recommendation_url:
             finding['Remediation']['Recommendation']['Url'] = self.recommendation_url
         if self.source_url:

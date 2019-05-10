@@ -61,12 +61,12 @@ def cloudtrail_log_delivery(rule: BaseScan):
             rule.setResult(Reconnoitre.COMPLIANT)
             rule.addFinding(Finding(**finding))
             continue
-        if rule.result != Reconnoitre.NON_COMPLIANT:
-            rule.setResult(Reconnoitre.NON_COMPLIANT)
-            finding = deepcopy(finding_base)
-            finding['confidence'] = 90
-            finding['compliance_status'] = Finding.STATUS_FAILED
-            rule.addFinding(Finding(**finding))
+    if not rule.result:
+        rule.setResult(Reconnoitre.NON_COMPLIANT)
+        finding = deepcopy(finding_base)
+        finding['confidence'] = 90
+        finding['compliance_status'] = Finding.STATUS_FAILED
+        rule.addFinding(Finding(**finding))
 
     rule.setData(trails)
     return rule

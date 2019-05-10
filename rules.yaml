@@ -13,11 +13,11 @@ custom:
       - ap-southeast-2
 
 # # CIS 4.3	Ensure VPC flow logging is enabled in all VPCs
-#   - name: enabled_vpc_flow_logs
-#     purpose: Determine whether the root account has active access keys
-#     control: tba
-#     regions:
-#       - ap-southeast-2
+  - name: enabled_vpc_flow_logs
+    purpose: Determine whether the root account has active access keys
+    control: tba
+    regions:
+      - ap-southeast-2
 
 #   - name: iam_key_max_age_days
 #     attributes:
@@ -188,21 +188,21 @@ cis:
   #   regions:
   #     - ap-southeast-2
 
-  # - name: ensure_a_support_role_has_been_created_to_manage_incidents_with_aws_support
-  #   version: 1.2.0
-  #   recommendation: 1.20
-  #   level: 1
-  #   scored: True
-  #   purpose: By implementing least privilege for access control, an IAM Role will require an appropriate IAM Policy to allow Support Center Access in order to manage Incidents with AWS Support
-  #   control: Create an IAM role for managing incidents with AWS, and configure it to allow only authorized users to manage incidents with AWS Support
+  - name: ensure_a_support_role_has_been_created_to_manage_incidents_with_aws_support
+    version: 1.2.0
+    recommendation: 1.20
+    level: 1
+    scored: True
+    purpose: By implementing least privilege for access control, an IAM Role will require an appropriate IAM Policy to allow Support Center Access in order to manage Incidents with AWS Support
+    control: Create an IAM role for managing incidents with AWS, and configure it to allow only authorized users to manage incidents with AWS Support
 
-  # - name: do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password
-  #   version: 1.2.0
-  #   recommendation: 1.21
-  #   level: 1
-  #   scored: False
-  #   purpose: Requiring that additional steps be taken by the user after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization
-  #   control: Delete access keys that that were created at the same time as the user profile and do not have a last used date
+  - name: do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password
+    version: 1.2.0
+    recommendation: 1.21
+    level: 1
+    scored: False
+    purpose: Requiring that additional steps be taken by the user after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization
+    control: Delete access keys that that were created at the same time as the user profile and do not have a last used date
 
   # - name: ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created
   #   version: 1.2.0
