@@ -33,9 +33,9 @@ def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_ha
                 'classifier': 'AWSSecretAccessKey',
                 'recommendation_text': rule.control,
                 # recommendation_url: str = None,
-                'finding_type': 'AwsIamUser',
+                'finding_type': 'Other',
+                # 'finding_type': 'AwsIamAccessKey',
                 'finding_type_id': report['user'],
-                'resource_type': 'AwsIamAccessKey',
                 # source_url: str = None,
                 'confidence': 100,
                 'criticality': 80,
@@ -45,32 +45,30 @@ def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_ha
             if report['access_key_1_last_used_date'] == 'N/A' and report['access_key_1_active'] == 'true':
                 finding = deepcopy(finding_base)
                 finding['compliance_status'] = Finding.STATUS_FAILED
-                finding['resource_data'] = {
+                finding['finding_type_data'] = {
                     'UserName': report['user'],
                     'Status': 'ACTIVE',
                     'CreatedAt': report['user_creation_time']
                 }
                 rule.setResult(Reconnoitre.NON_COMPLIANT)
                 rule.addFinding(Finding(**finding))
-                continue
 
             if report['access_key_2_last_used_date'] == 'N/A' and report['access_key_2_active'] == 'true':
                 finding = deepcopy(finding_base)
                 finding['compliance_status'] = Finding.STATUS_FAILED
-                finding['resource_data'] = {
+                finding['finding_type_data'] = {
                     'UserName': report['user'],
                     'Status': 'ACTIVE',
                     'CreatedAt': report['user_creation_time']
                 }
                 rule.setResult(Reconnoitre.NON_COMPLIANT)
                 rule.addFinding(Finding(**finding))
-                continue
 
             finding = deepcopy(finding_base)
             finding['severity_normalized'] = 0
             finding['compliance_status'] = Finding.STATUS_PASSED
-            finding['resource_type'] = 'Other'
-            finding['resource_data'] = report
+            finding['finding_type'] = 'Other'
+            finding['finding_type_data'] = Reconnoitre.fix_custom_data(report)
             rule.setResult(Reconnoitre.COMPLIANT)
             rule.addFinding(Finding(**finding))
 

@@ -27,8 +27,7 @@ class Finding:
             recommendation_text: str,
             finding_type: str,
             finding_type_id: str,
-            resource_type: str,
-            resource_data: dict = {},
+            finding_type_data: dict = {},
             recommendation_url: str = None,
             source_url: str = None,
             confidence: int = 100,
@@ -66,11 +65,10 @@ class Finding:
         self.source_url = source_url
         self.name = name
         self.title = title
-        self.type = f'{namespace}/{category}/{classifier}'
-        self.resource_type = resource_type
-        self.resource_data = resource_data
-        self.type = finding_type
-        self.type_id = finding_type_id
+        self.types = f'{namespace}/{category}/{classifier}'
+        self.finding_type = finding_type
+        self.finding_type_id = finding_type_id
+        self.finding_type_data = finding_type_data
 
     def toString(self):
         return f"""                                 {self._make_generator_id()}
@@ -109,7 +107,7 @@ class Finding:
                 'Normalized': self.severity_normalized
             },
             'Title': f'[Reconnoitre] {self.title}'[:256],
-            'Types': [self.type],
+            'Types': [self.types],
             'UpdatedAt': self.created_at,
             'Resources': []
         }
@@ -120,10 +118,10 @@ class Finding:
         if self.source_url:
             finding['SourceUrl'] = self.source_url
         resource = {
-            'Type': self.type,
-            'Id': self.type_id,
+            'Type': self.finding_type,
+            'Id': self.finding_type_id,
             'Details': {
-                self.resource_type: self.resource_data
+                self.finding_type: self.finding_type_data
             }
         }
         if self.region:
@@ -237,8 +235,16 @@ class BaseScan:
 
             findings.append(awssh_finding)
         response = securityhub.batch_import_findings(Findings=findings)
-        log.info(f'AWS Security Hub findings {response["SuccessCount"]} sent and {response["FailedCount"]} failed')
-        log.debug(f'AWS Security Hub failed findings {response["FailedFindings"]}')
+        if response["FailedCount"] > 0:
+            log.warn(f'AWS Security Hub findings {response["SuccessCount"]} sent and {response["FailedCount"]} failed')
+            log.debug(f'AWS Security Hub failed findings {response["FailedFindings"]}')
+            for failure in response["FailedFindings"]:
+                for f in self.findings:
+                    finding = f.toDict()
+                    if finding['Id'] == failure['Id']:
+                        log.debug(json.dumps(finding, indent=2))
+        else:
+            log.info(f'AWS Security Hub findings {response["SuccessCount"]} sent and {response["FailedCount"]} failed')
         return findings
 
 

@@ -13,7 +13,8 @@ def enabled_vpc_flow_logs(rule: BaseScan):
             rule.setData(data)
             finding_base = {
                 'account_id': str(rule.account_id),
-                'name': f"{rule.__class__.__name__.lower().replace('scan', '')}",
+                'name':
+                f"{rule.__class__.__name__.lower().replace('scan', '')}",
                 'region': rule.region,
                 'title': rule.name.replace('_', ' '),
                 'description': rule.purpose,
@@ -23,10 +24,9 @@ def enabled_vpc_flow_logs(rule: BaseScan):
                 'classifier': 'CIS AWS Foundations Benchmark',
                 'recommendation_text': rule.control,
                 # recommendation_url: str = None,
-                'finding_type': 'AwsEc2Vpc',
+                'finding_type': 'Other',
                 'finding_type_id': vpc['VpcId'],
-                'resource_type': 'Other',
-                'resource_data': Reconnoitre.fix_custom_data(flow),
+                'finding_type_data': Reconnoitre.fix_custom_data(flow),
                 # source_url: str = None,
                 'confidence': 100,
                 'criticality': 74,

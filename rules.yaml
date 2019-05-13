@@ -58,13 +58,13 @@ cis:
   #   purpose: Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used
   #   control: Automatically disable dormant accounts after a 90 day period of inactivity
 
-  # - name: ensure_access_keys_are_rotated_every_90_days_or_less
-  #   version: 1.2.0
-  #   recommendation: 1.4
-  #   level: 1
-  #   scored: True
-  #   purpose: Rotating access keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used. Access keys should be rotated to ensure that data cannot be accessed with an old key which might have been lost, cracked, or stolen
-  #   control: Ensure all active keys have been rotated within 90 days. Apply a proceedure (manual or scripted) to generate new replacement access keys and make inactive all keys that have not been rotated in 90 Days
+  - name: ensure_access_keys_are_rotated_every_90_days_or_less
+    version: 1.2.0
+    recommendation: 1.4
+    level: 1
+    scored: True
+    purpose: Rotating access keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used. Access keys should be rotated to ensure that data cannot be accessed with an old key which might have been lost, cracked, or stolen
+    control: Ensure all active keys have been rotated within 90 days. Apply a proceedure (manual or scripted) to generate new replacement access keys and make inactive all keys that have not been rotated in 90 Days
 
   # - name: ensure_iam_password_policy_requires_at_least_one_uppercase_letter
   #   version: 1.2.0
