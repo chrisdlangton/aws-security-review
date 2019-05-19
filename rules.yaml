@@ -37,6 +37,8 @@ cis:
     scored: True
     purpose: The "root" account is the most privileged AWS account. Minimizing the use of this account and adopting the principle of least privilege for access management will reduce the risk of accidental changes and unintended disclosure of highly privileged credentials
     control: Ensure that all users with administrative account access use a dedicated or secondary account for elevated activities. This account should only be used for administrative activities and not internet browsing, email, or similar activities
+    recommendation_url: https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html
+    source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44836
     settings:
       password_used: 90
       access_key_used: 0

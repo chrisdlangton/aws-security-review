@@ -19,15 +19,17 @@ def cloudtrail_log_delivery(rule: BaseScan):
             'category': 'Industry and Regulatory Standards',
             'classifier': 'CIS AWS Foundations Benchmark',
             'recommendation_text': rule.control,
-            # recommendation_url: str = None,
             'finding_type': 'Other',
             'finding_type_id': 'cloudtrail-log-delivery',
             'finding_type_data': Reconnoitre.fix_custom_data(trail),
-            # source_url: str = None,
             'confidence': 100,
             'criticality': 74,
             'severity_normalized': 85
         }
+        if rule.recommendation_url:
+            finding_base['recommendation_url'] = rule.recommendation_url
+        if rule.source_url:
+            finding_base['source_url'] = rule.source_url
 
         if 'CloudWatchLogsLogGroupArn' in trail and 'S3BucketName' in trail:
             finding = deepcopy(finding_base)

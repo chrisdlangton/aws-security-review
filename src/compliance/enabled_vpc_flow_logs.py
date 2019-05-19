@@ -23,15 +23,17 @@ def enabled_vpc_flow_logs(rule: BaseScan):
                 'category': 'Industry and Regulatory Standards',
                 'classifier': 'CIS AWS Foundations Benchmark',
                 'recommendation_text': rule.control,
-                # recommendation_url: str = None,
                 'finding_type': 'Other',
                 'finding_type_id': vpc['VpcId'],
                 'finding_type_data': Reconnoitre.fix_custom_data(flow),
-                # source_url: str = None,
                 'confidence': 100,
                 'criticality': 74,
                 'severity_normalized': 60
             }
+            if rule.recommendation_url:
+                finding_base['recommendation_url'] = rule.recommendation_url
+            if rule.source_url:
+                finding_base['source_url'] = rule.source_url
             if flow['FlowLogStatus'].lower() != 'active':
                 finding = deepcopy(finding_base)
                 finding['compliance_status'] = Finding.STATUS_FAILED

@@ -19,15 +19,17 @@ def ensure_a_support_role_has_been_created_to_manage_incidents_with_aws_support(
             'category': 'Industry and Regulatory Standards',
             'classifier': 'CIS AWS Foundations Benchmark',
             'recommendation_text': rule.control,
-            # recommendation_url: str = None,
             'finding_type': 'Other',
             'finding_type_id': 'support-role-exist',
             'finding_type_data': Reconnoitre.fix_custom_data(role),
-            # source_url: str = None,
             'confidence': 100,
             'criticality': 10,
             'severity_normalized': 25
         }
+        if rule.recommendation_url:
+            finding_base['recommendation_url'] = rule.recommendation_url
+        if rule.source_url:
+            finding_base['source_url'] = rule.source_url
         if role.get('RoleName'):
             finding = deepcopy(finding_base)
             finding['severity_normalized'] = 0

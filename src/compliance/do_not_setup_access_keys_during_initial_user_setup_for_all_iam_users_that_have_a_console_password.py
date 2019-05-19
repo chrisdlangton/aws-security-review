@@ -32,15 +32,17 @@ def do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_ha
                 'category': 'Security',
                 'classifier': 'AWSSecretAccessKey',
                 'recommendation_text': rule.control,
-                # recommendation_url: str = None,
                 'finding_type': 'Other',
                 # 'finding_type': 'AwsIamAccessKey',
                 'finding_type_id': report['user'],
-                # source_url: str = None,
                 'confidence': 100,
                 'criticality': 80,
                 'severity_normalized': 95
             }
+            if rule.recommendation_url:
+                finding_base['recommendation_url'] = rule.recommendation_url
+            if rule.source_url:
+                finding_base['source_url'] = rule.source_url
 
             if report['access_key_1_last_used_date'] == 'N/A' and report['access_key_1_active'] == 'true':
                 finding = deepcopy(finding_base)

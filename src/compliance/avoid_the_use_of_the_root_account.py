@@ -31,15 +31,17 @@ def avoid_the_use_of_the_root_account(rule: BaseScan):
                 'category': 'User',
                 'classifier': 'root',
                 'recommendation_text': rule.control,
-                # recommendation_url: str = None,
                 'finding_type': 'Other',
                 'finding_type_id': 'root',
                 'finding_type_data': Reconnoitre.fix_custom_data(report),
-                # source_url: str = None,
                 'confidence': 100,
                 'criticality': 99,
                 'severity_normalized': 0
             }
+            if rule.recommendation_url:
+                finding_base['recommendation_url'] = rule.recommendation_url
+            if rule.source_url:
+                finding_base['source_url'] = rule.source_url
             password_last_used = libs.from_iso8601(report['password_last_used'])
             delta = now - password_last_used
             if delta.days <= rule.settings.get('password_used'):

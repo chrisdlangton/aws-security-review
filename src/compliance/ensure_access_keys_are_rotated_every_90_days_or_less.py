@@ -20,6 +20,13 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(rule: BaseScan):
             report = {cols[k]: item for k, item in enumerate(s.decode().split(","))}
             if report['user'] == '<root_account>':
                 continue
+            if (report['access_key_1_active'] == 'false' and report['access_key_2_active'] == 'false'):
+                continue
+
+            user_creation_time = libs.from_iso8601(report['user_creation_time'])
+            delta = now - user_creation_time
+            if delta.days < 90: # new user
+                continue
 
             finding_base = {
                 'account_id': str(rule.account_id),
@@ -32,23 +39,17 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(rule: BaseScan):
                 'category': 'Security',
                 'classifier': 'AWSSecretAccessKey',
                 'recommendation_text': rule.control,
-                # recommendation_url: str = None,
                 'finding_type': 'Other',
                 # 'finding_type': 'AwsIamAccessKey',
                 'finding_type_id': report['user'],
-                # source_url: str = None,
                 'confidence': 100,
                 'criticality': 80,
                 'severity_normalized': 95
             }
-            if (report['access_key_1_active'] == 'false' and report['access_key_2_active'] == 'false'):
-                continue
-
-            user_creation_time = libs.from_iso8601(report['user_creation_time'])
-            delta = now - user_creation_time
-            if delta.days < 90: # new user
-                continue
-
+            if rule.recommendation_url:
+                finding_base['recommendation_url'] = rule.recommendation_url
+            if rule.source_url:
+                finding_base['source_url'] = rule.source_url
             if report['access_key_1_active'] == 'true':
                 access_key_1_last_rotated = libs.from_iso8601(report['access_key_1_last_rotated'])
                 delta = now - access_key_1_last_rotated
