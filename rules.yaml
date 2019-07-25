@@ -51,14 +51,21 @@ cis:
   #   scored: True
   #   purpose: Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that emits a time-sensitive key and have knowledge of a credential
   #   control: Use multi-factor authentication and encrypted channels for all administrative account access
+  #   recommendation_url: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44837
 
-  # - name: ensure_credentials_unused_for_90_days_or_greater_are_disabled
-  #   version: 1.2.0
-  #   recommendation: 1.3
-  #   level: 1
-  #   scored: True
-  #   purpose: Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used
-  #   control: Automatically disable dormant accounts after a 90 day period of inactivity
+  - name: ensure_credentials_unused_for_90_days_or_greater_are_disabled
+    version: 1.2.0
+    recommendation: 1.3
+    level: 1
+    scored: True
+    purpose: Disabling or removing unnecessary credentials will reduce the window of opportunity for credentials associated with a compromised or abandoned account to be used
+    control: Automatically disable dormant accounts after a 90 day period of inactivity
+    recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44838
+    source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44838
+    settings:
+      compliant_days: 90
+      warning_days_prior: 10
 
   - name: ensure_access_keys_are_rotated_every_90_days_or_less
     version: 1.2.0
@@ -67,6 +74,11 @@ cis:
     scored: True
     purpose: Rotating access keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used. Access keys should be rotated to ensure that data cannot be accessed with an old key which might have been lost, cracked, or stolen
     control: Ensure all active keys have been rotated within 90 days. Apply a proceedure (manual or scripted) to generate new replacement access keys and make inactive all keys that have not been rotated in 90 Days
+    recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44839
+    source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44839
+    settings:
+      compliant_days: 90
+      warning_days_prior: 10
 
   # - name: ensure_iam_password_policy_requires_at_least_one_uppercase_letter
   #   version: 1.2.0
@@ -75,6 +87,8 @@ cis:
   #   scored: True
   #   purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
   #   control: Set the password policy as prescribed (at least one uppercase letter)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44840
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44840
 
   # - name: ensure_iam_password_policy_require_at_least_one_lowercase_letter
   #   version: 1.2.0
@@ -83,6 +97,8 @@ cis:
   #   scored: True
   #   purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
   #   control: Set the password policy as prescribed (at least one lowercase letter)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44841
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44841
 
   # - name: ensure_iam_password_policy_require_at_least_one_symbol
   #   version: 1.2.0
@@ -91,6 +107,8 @@ cis:
   #   scored: True
   #   purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
   #   control: Perform the following to set the password policy as prescribed (at least one symbol)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44842
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44842
 
   # - name: ensure_iam_password_policy_require_at_least_one_number
   #   version: 1.2.0
@@ -99,6 +117,8 @@ cis:
   #   scored: True
   #   purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
   #   control: Perform the following to set the password policy as prescribed (at least one number)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44843
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44843
 
   # - name: ensure_iam_password_policy_requires_minimum_length_of_14_or_greater
   #   version: 1.2.0
@@ -107,6 +127,8 @@ cis:
   #   scored: True
   #   purpose: Setting a password complexity policy increases account resiliency against brute force login attempts
   #   control: Perform the following to set the password policy as prescribed ( minimum length of 14 or more)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44844
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44844
 
   # - name: ensure_iam_password_policy_prevents_password_reuse
   #   version: 1.2.0
@@ -115,6 +137,8 @@ cis:
   #   scored: True
   #   purpose: Preventing password reuse increases account resiliency against brute force login attempts
   #   control: Perform the following to set the password policy as prescribed (prevent password reuse)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44845
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44845
 
   # - name: ensure_iam_password_policy_expires_passwords_within_90_days_or_less
   #   version: 1.2.0
@@ -123,6 +147,8 @@ cis:
   #   scored: True
   #   purpose: Reducing the password lifetime increases account resiliency against brute force login attempts
   #   control: Perform the following to set the password policy as prescribed (expire passwords within 90 days or less)
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44846
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44846
 
   # - name: ensure_no_root_account_access_key_exists
   #   version: 1.2.0
@@ -131,6 +157,8 @@ cis:
   #   scored: True
   #   purpose: Removing access keys associated with the root account limits vectors by which the account can be compromised. Additionally, removing the root access keys encourages the creation and use of role based accounts that are least privileged
   #   control: Delete or disable active root access keys. Ensure that all users with administrative account access use a dedicated or secondary account for elevated activities
+  #   recommendation_url: http://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44847
 
   # - name: ensure_mfa_is_enabled_for_the_root_account
   #   version: 1.2.0
@@ -139,6 +167,8 @@ cis:
   #   scored: True
   #   purpose: Enabling MFA provides increased security for console access as it requires the authenticating principal to possess a device that emits a time-sensitive key and have knowledge of a credential
   #   control: Use multi-factor authentication (MFA) for all administrative "root" account access.
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44848
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44848
 
   # - name: ensure_hardware_mfa_is_enabled_for_the_root_account
   #   version: 1.2.0
@@ -147,6 +177,8 @@ cis:
   #   scored: True
   #   purpose: A hardware MFA has a smaller attack surface than a virtual MFA. For example, a hardware MFA does not suffer the attack surface introduced by the mobile smartphone on which a virtual MFA resides
   #   control: Establish a hardware MFA for the root account. Remediation should be only through the AWS Console , you must use your root account devices for the root account using credentials to sign in to AWS. You cannot manage MFA devices for the root account using other credentials
+  #   recommendation_url: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable_physical.html#enable-hw-mfa-for-root
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44849
 
   # - name: ensure_security_questions_are_registered_in_the_aws_account
   #   version: 1.2.0
@@ -155,6 +187,8 @@ cis:
   #   scored: False
   #   purpose: During events in which the Root password is no longer accessible or the MFA token associated with root is lost/destroyed it is possible, through authentication using secret questions and associated answers, to recover root login access
   #   control: Login to the AWS Account as root, in the "Configure Security Questions" section select an appropriate question and enter an appropriate answer for 3 questions. Record Questions and Answers and place in a secure physical location
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44850
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44850
 
   # - name: ensure_iam_policies_are_attached_only_to_groups_or_roles
   #   version: 1.2.0
@@ -163,6 +197,8 @@ cis:
   #   scored: True
   #   purpose: Assigning privileges at the group or role level reduces the complexity of access management as the number of users grow. Reducing access management complexity may in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges
   #   control: Create an IAM group and assign a policy to it, add a user to a given group, and remove a direct association between a user and any inline policies
+  #   recommendation_url: http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44851
 
   # - name: maintain_current_contact_details
   #   version: 1.2.0
@@ -171,6 +207,8 @@ cis:
   #   scored: False
   #   purpose: If an AWS account is observed to be behaving in a prohibited or suspicious manner, AWS will attempt to contact the account owner by email and phone using the contact details listed. If this is unsuccessful and the account behavior needs urgent mitigation, proactive measures may be taken, including throttling of traffic between the account exhibiting suspicious behavior and the AWS API endpoints and the Internet. This will result in impaired service to and from the account in question, so it is in both the customers and AWS best interests that prompt contact can be established. This is best achieved by setting AWS account contact details to point to resources which have multiple individuals as recipients, such as email aliases and PABX hunt groups
   #   control: Login to the AWS Account  with a user who has permission to read and write Billing information. Edit your contact information in the Account Settings
+  #   recommendation_url: https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/manage-account-payment.html#contact-info
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44854
 
   # - name: ensure_security_contact_information_is_registered
   #   version: 1.2.0
@@ -179,6 +217,8 @@ cis:
   #   scored: False
   #   purpose: Specifying security-specific contact information will help ensure that security advisories sent by AWS reach the team in your organization that is best equipped to respond to them
   #   control: Establish security contact in the Alternate Contacts section of My Account. Consider specifying an internal email distribution list to ensure emails are regularly monitored by more than one individual
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44855
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44855
 
   # - name: ensure_iam_instance_roles_are_used_for_aws_resource_access_from_instances
   #   version: 1.2.0
@@ -187,6 +227,8 @@ cis:
   #   scored: False
   #   purpose: AWS IAM roles reduce the risks associated with sharing and rotating credentials that can be used outside of AWS itself. If credentials are compromised, they can be used from outside of the AWS account they give access to. In contrast, in order to leverage role permissions an attacker would need to gain and maintain access to a specific instance to use the privileges associated with it. As time goes on, credentials that cannot be rotated are more likely to be known by an increasing number of individuals who no longer work for the organization owning the credentials
   #   control: For any EC2 instance without a role associated it is now possible to associate roles while the instance state is of either 'running' or 'stopped' state, you do not need to stop or launch a new instance to assign a role.
+  #   recommendation_url: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44856
   #   regions:
   #     - ap-southeast-2
 
@@ -197,6 +239,8 @@ cis:
     scored: True
     purpose: By implementing least privilege for access control, an IAM Role will require an appropriate IAM Policy to allow Support Center Access in order to manage Incidents with AWS Support
     control: Create an IAM role for managing incidents with AWS, and configure it to allow only authorized users to manage incidents with AWS Support
+    recommendation_url: http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html
+    source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44857
 
   - name: do_not_setup_access_keys_during_initial_user_setup_for_all_iam_users_that_have_a_console_password
     version: 1.2.0
@@ -205,6 +249,8 @@ cis:
     scored: False
     purpose: Requiring that additional steps be taken by the user after their profile has been created will give a stronger indication of intent that access keys are [a] necessary for their work and [b] once the access key is established on an account that the keys may be in use somewhere in the organization
     control: Delete access keys that that were created at the same time as the user profile and do not have a last used date
+    recommendation_url: https://workbench.cisecurity.org/sections/19694/recommendations/44858
+    source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44858
 
   # - name: ensure_iam_policies_that_allow_full_administrative_privileges_are_not_created
   #   version: 1.2.0
@@ -213,3 +259,75 @@ cis:
   #   scored: True
   #   purpose: It's more secure to start with a minimum set of permissions and grant additional permissions as necessary, rather than starting with permissions that are too lenient and then trying to tighten them later. Providing full administrative privileges instead of restricting to the minimum set of permissions that the user is required to do exposes the resources to potentially unwanted actions
   #   control: Detach the policy that has full administrative privileges, grant least privilege in its place, granting only the permissions required to perform a task
+  #   recommendation_url: http://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html
+  #   source_url: https://workbench.cisecurity.org/sections/19694/recommendations/44859
+
+  # - name: ensure_cloudtrail_is_enabled_in_all_regions
+  #   version: 1.2.0
+  #   recommendation: 2.1
+  #   level: 1
+  #   scored: True
+  #   purpose: AWS CloudTrail is a web service that records AWS API calls for your account and delivers log files to you. The recorded information includes the identity of the API caller, the time of the API call, the source IP address of the API caller, the request parameters, and the response elements returned by the AWS service
+  #   control: Ensure CloudTrail is enabled for all regions with at-least 1 trail delivery configured.
+  #   recommendation_url: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-and-data-events-with-cloudtrail.html?icmpid=docs_cloudtrail_console#logging-management-events
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44860
+
+  # - name: ensure_cloudtrail_log_file_validation_is_enabled
+  #   version: 1.2.0
+  #   recommendation: 2.2
+  #   level: 2
+  #   scored: True
+  #   purpose: CloudTrail log file validation creates a digitally signed digest file containing a hash of each log that CloudTrail writes to S3. These digest files can be used to determine whether a log file was changed, deleted, or unchanged after CloudTrail delivered the log
+  #   control: Ensure log file validation is enabled on any given trail delivered to S3 providing additional integrity checking
+  #   recommendation_url: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-enabling.html
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44861
+
+  # - name: ensure_the_s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible
+  #   version: 1.2.0
+  #   recommendation: 2.3
+  #   level: 1
+  #   scored: True
+  #   purpose: Use a bucket policy or access control list (ACL) prevent public access to the CloudTrail logs stored in an S3 bucket. Allowing public access to CloudTrail log content may aid an adversary in identifying weaknesses in the affected account's use or configuration
+  #   control: By default, S3 buckets are not publicly accessible. Remove any public access that has been granted to the bucket via an ACL or S3 bucket policy
+  #   recommendation_url: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44862
+
+  # - name: ensure_cloudtrail_trails_are_integrated_with_cloudwatch_logs
+  #   version: 1.2.0
+  #   recommendation: 2.4
+  #   level: 1
+  #   scored: True
+  #   purpose: Sending CloudTrail logs to CloudWatch Logs will facilitate real-time and historic activity logging based on user, API, resource, and IP address, and provides opportunity to establish alarms and notifications for anomalous or sensitivity account activity
+  #   control: Ensure CloudTrail is configured for CloudTrail in each region
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19695/recommendations/44863
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44863
+
+  # - name: ensure_aws_config_is_enabled_in_all_regions
+  #   version: 1.2.0
+  #   recommendation: 2.5
+  #   level: 1
+  #   scored: True
+  #   purpose: The AWS configuration item history captured by AWS Config enables security analysis, resource change tracking, and compliance auditing.
+  #   control: Enable AWS Config recording in all regions
+  #   recommendation_url: http://docs.aws.amazon.com/cli/latest/reference/configservice/describe-configuration-recorder-status.html
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44864
+
+  # - name: ensure_s3_bucket_access_logging_is_enabled_on_the_cloudtrail_s3_bucket
+  #   version: 1.2.0
+  #   recommendation: 2.6
+  #   level: 1
+  #   scored: True
+  #   purpose: By enabling S3 bucket logging on target S3 buckets, it is possible to capture all events which may affect objects within an target buckets. Configuring logs to be placed in a separate bucket allows access to log information which can be useful in security and incident response workflows
+  #   control: Ensure the S3 bucket that stores CloudTrail has the access logging option is enabled
+  #   recommendation_url: https://workbench.cisecurity.org/sections/19695/recommendations/44865
+  #   source_url: https://workbench.cisecurity.org/sections/19695/recommendations/44865
+
+  # - name:
+  #   version: 1.2.0
+  #   recommendation: 2.2
+  #   level: 2
+  #   scored: True
+  #   purpose:
+  #   control:
+  #   recommendation_url:
+  #   source_url:

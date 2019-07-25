@@ -99,6 +99,31 @@ python src/main.py
 
 Check out the cli arguments by adding `--help`
 
+```
+usage: main.py [-h] [-c CONFIG_FILE] [-r RULES_FILE] [-l LOG_FILE]
+               [-i IGNORE_FILE] [-t TEST] [-o OUTPUT] [--verbose] [--debug]
+
+open net scans
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config-file CONFIG_FILE
+                        absolute path to config file
+  -r RULES_FILE, --rules-file RULES_FILE
+                        absolute path to rules config file
+  -l LOG_FILE, --log-file LOG_FILE
+                        absolute path to log file
+  -i IGNORE_FILE, --ignore-file IGNORE_FILE
+                        absolute path to ignore file
+  -t TEST, --test TEST  Comma seperated Rule name to test
+  -o OUTPUT, --output OUTPUT
+                        output options: text | json | securityhub | cvrf | stix
+  --verbose, -v         use -vvvvv for debug output, remove a "v" for quieter
+                        outputs
+  --debug               avoids multiprocessing for cleaner stack traces but
+                        may be slower
+```
+
 ## AWS Security Hub
 
 Send findings to the SecurityHub of the account being scanned using;

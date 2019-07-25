@@ -28,9 +28,12 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(rule: BaseScan):
             if delta.days < 90: # new user
                 continue
 
+            compliant_days = rule.settings.get('compliant_days', 90)
+            warning_days = compliant_days - rule.settings.get('warning_days_prior', 10)
             finding_base = {
                 'account_id': str(rule.account_id),
-                'name': f"{rule.__class__.__name__.lower().replace('scan', '')}",
+                'name':
+                f"{rule.__class__.__name__.lower().replace('scan', '')}",
                 'region': rule.region,
                 'title': rule.name.replace('_', ' '),
                 'description': rule.purpose,
@@ -53,38 +56,38 @@ def ensure_access_keys_are_rotated_every_90_days_or_less(rule: BaseScan):
             if report['access_key_1_active'] == 'true':
                 access_key_1_last_rotated = libs.from_iso8601(report['access_key_1_last_rotated'])
                 delta = now - access_key_1_last_rotated
-                if delta.days > 80:
+                if delta.days > warning_days:
                     finding = deepcopy(finding_base)
                     finding['description'] += f'. access_key_1_last_rotated {delta.days} days ago'
                     finding['criticality'] = 70
-                    finding['compliance_status'] = Finding.STATUS_FAILED
+                    finding['compliance_status'] = Finding.STATUS_WARNING
                     finding['finding_type_data'] = {
                         'UserName': report['user'],
                         'Status': 'ACTIVE',
                         'CreatedAt': report['user_creation_time']
                     }
                     rule.setResult(Reconnoitre.COMPLIANT)
-                    if delta.days >= 90:
+                    if delta.days >= compliant_days:
                         finding['criticality'] = 95
-                        finding['compliance_status'] = Finding.STATUS_WARNING
+                        finding['compliance_status'] = Finding.STATUS_FAILED
                         rule.setResult(Reconnoitre.NON_COMPLIANT)
                     rule.addFinding(Finding(**finding))
 
             if report['access_key_2_active'] == 'true':
                 access_key_2_last_rotated = libs.from_iso8601(report['access_key_2_last_rotated'])
                 delta = now - access_key_2_last_rotated
-                if delta.days > 80:
+                if delta.days > warning_days:
                     finding = deepcopy(finding_base)
                     finding['description'] += f'access_key_2_last_rotated {delta.days} days ago'
                     finding['criticality'] = 70
-                    finding['compliance_status'] = Finding.STATUS_FAILED
+                    finding['compliance_status'] = Finding.STATUS_WARNING
                     finding['finding_type_data'] = {
                         'UserName': report['user'],
                         'Status': 'ACTIVE',
                         'CreatedAt': report['user_creation_time']
                     }
                     rule.setResult(Reconnoitre.COMPLIANT)
-                    if delta.days >= 90:
+                    if delta.days >= compliant_days:
                         finding['criticality'] = 95
                         finding['compliance_status'] = Finding.STATUS_FAILED
                         rule.setResult(Reconnoitre.NON_COMPLIANT)

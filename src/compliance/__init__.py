@@ -79,6 +79,7 @@ class Finding:
         Criticality:            {self.criticality}
         Confidence:             {self.confidence}
         Severity Normalised:    {self.severity_normalized}
+        Data:                   {json.dumps(self.finding_type_data, indent=4)}
         """
 
     def toDict(self):
@@ -106,7 +107,7 @@ class Finding:
             'Severity': {
                 'Normalized': self.severity_normalized
             },
-            'Title': f'[Reconnoitre] {self.title}'[:256],
+            'Title': f'[Reconnoitre] {self.title}' [:256],
             'Types': [self.types],
             'UpdatedAt': self.created_at,
             'Resources': []
@@ -134,7 +135,8 @@ class Finding:
         return json.dumps(self.toDict(), indent=2)
 
     def _make_generator_id(self):
-        return f'reconnoitre-{self.name}-{Reconnoitre.make_finding_id(self.title)}'
+        finding_id = Reconnoitre.make_finding_id(f'{self.title}{self.finding_type_data}')
+        return f'reconnoitre-{self.name}-{finding_id}'
 
     def _make_id(self):
         return f'{self.region}/{self.account_id}/{Reconnoitre.make_finding_id(self.title)}'
@@ -149,6 +151,8 @@ class BaseScan:
         self.purpose = rule_config.get('purpose')
         self.control = rule_config.get('control')
         self.region = rule_config.get('region', None)
+        self.recommendation_url = rule_config.get('recommendation_url', None)
+        self.source_url = rule_config.get('source_url', None)
         self.account_alias = account.get('alias', None)
         name = rule_config.get('name')
         account_id = account.get('id')
@@ -175,9 +179,13 @@ class BaseScan:
         self.findings.append(finding)
 
     def format_cvrf(self) -> dict:
+        log = logging.getLogger()
+        log.warn('cvrf output format not yet supported')
         pass
 
     def format_stix(self) -> dict:
+        log = logging.getLogger()
+        log.warn('stix output format not yet supported')
         pass
 
     def format_json(self, indent=None) -> list:
@@ -197,7 +205,7 @@ class BaseScan:
             'ProductFields': [{
                 'Key': 'Service_Name',
                 'Value': 'Reconnoitre',
-                'Comparison': 'CONTAINS'
+                'Comparison': 'EQUALS'
             }]
         }
         if not archived:

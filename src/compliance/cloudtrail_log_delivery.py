@@ -40,7 +40,7 @@ def cloudtrail_log_delivery(rule: BaseScan):
             continue
         elif 'CloudWatchLogsLogGroupArn' in trail:
             finding = deepcopy(finding_base)
-            finding['severity_normalized'] = 1
+            finding['severity_normalized'] = 0
             finding['confidence'] = 50
             finding['compliance_status'] = Finding.STATUS_PASSED
             rule.setResult(Reconnoitre.COMPLIANT)
@@ -48,7 +48,7 @@ def cloudtrail_log_delivery(rule: BaseScan):
             continue
         elif 'S3BucketName' in trail:
             finding = deepcopy(finding_base)
-            finding['severity_normalized'] = 1
+            finding['severity_normalized'] = 0
             finding['confidence'] = 50
             finding['compliance_status'] = Finding.STATUS_PASSED
             rule.setResult(Reconnoitre.COMPLIANT)
@@ -56,7 +56,7 @@ def cloudtrail_log_delivery(rule: BaseScan):
             continue
         elif 'SnsTopicARN' in trail:
             finding = deepcopy(finding_base)
-            finding['severity_normalized'] = 1
+            finding['severity_normalized'] = 0
             finding['confidence'] = 25
             finding['compliance_status'] = Finding.STATUS_PASSED
             rule.setResult(Reconnoitre.COMPLIANT)

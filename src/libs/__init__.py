@@ -67,18 +67,18 @@ class Database:
     def dump(self):
         return self.database.dump()
 
-def get_config(key: str = None, config_file: str = None, default=None) -> dict:
+def get_config(cache_key: str = None, config_file: str = None, default=None) -> dict:
     global config
-    if not key:
-        key = xxh64_hexdigest(bytes(config_file), seed=20141025)
-    if key in config:
-        return config[key] or default
+    if not cache_key:
+        cache_key = xxh64_hexdigest(bytes(config_file), seed=20141025)
+    if cache_key in config:
+        return config[cache_key] or default
     if not config_file:
         return default
     with open(config_file, 'r') as f:
-        config[key] = yaml.load(f.read(), Loader=yaml.SafeLoader) or default
+        config[cache_key] = yaml.load(f.read(), Loader=yaml.SafeLoader) or default
 
-    return config[key] or default
+    return config[cache_key] or default
 
 
 def randomstr(length: int) -> str:

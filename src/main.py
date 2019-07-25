@@ -92,7 +92,8 @@ def main(debug, test, output):
         libs.configure_credentials(role, profile, id)
         if debug:
             for item in queue:
-                scans.append(Reconnoitre.check_rule(item))
+                r = Reconnoitre.check_rule(item)
+                scans.append(r)
         else:
             gc.collect()
             p = multiprocessing.Pool(processes=multiprocessing.cpu_count())
@@ -119,15 +120,15 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--log-file', default=None, help='absolute path to log file')
     parser.add_argument('-i', '--ignore-file', default=None, help='absolute path to ignore file')
     parser.add_argument('-t', '--test', type=str, default=None, help='Comma seperated Rule name to test')
-    parser.add_argument('-o', '--output', type=str, default='text', help='output options: text | json')
+    parser.add_argument('-o', '--output', type=str, default='text', help='output options: text | json | securityhub | cvrf | stix')
     parser.add_argument('--verbose', '-v', action='count', default=0, help='use -vvvvv for debug output, remove a "v" for quieter outputs')
     parser.add_argument('--debug', action='store_true', help='avoids multiprocessing for cleaner stack traces but may be slower')
     args = parser.parse_args()
 
     log_level = args.verbose if args.verbose else 3
     libs.setup_logging(log_level, file_path=args.log_file)
-    libs.get_config(config_file=args.config_file, key='config')
-    libs.get_config(config_file=args.rules_file, key='rules')
+    libs.get_config(config_file=args.config_file, cache_key='config')
+    libs.get_config(config_file=args.rules_file, cache_key='rules')
     if args.ignore_file:
-        libs.get_config(config_file=args.ignore_file, key='ignore')
+        libs.get_config(config_file=args.ignore_file, cache_key='ignore')
     main(debug=args.debug, test=args.test, output=args.output)
