@@ -1,9 +1,0 @@
-bin/
-include/
-lib/
-local/
-share/
-**.pyc
-.vscode/
-**.db
-config.yaml
